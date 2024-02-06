@@ -1,12 +1,9 @@
 <template>
-  <Button
-    class="p-0 border-0 my-btn"
-    style="width: 20px; height: 16px; background-color: white"
-    text
-  >
-    <img style="width: 100%" src="../assets/combined-shape.svg" />
-  </Button>
+  <button class="p-0"
+    style="width: 20px ">
+    <CombinedShape />
+  </button>
 </template>
 <script setup lang="ts">
-import Button from 'primevue/button'
+import CombinedShape from '@/assets/combined-shape.vue';
 </script>

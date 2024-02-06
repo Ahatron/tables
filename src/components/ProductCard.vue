@@ -22,39 +22,16 @@
         >
           удалить
         </button>
+
+        <ProductInputs />
       </div>
-
-      <label class="description w-100"
-        >Наименование еденицы
-        <MyDropDown class="w-100 mb-2" />
-      </label>
-
-      <label class="description w-100"
-        >Цена
-        <input type="number" class="w-100 mb-2" />
-      </label>
-
-      <label class="description w-100"
-        >Количество
-        <input type="number" class="w-100 mb-2" />
-      </label>
-
-      <label class="description w-100"
-        >Название товара
-        <MyDropDown class="w-100 mb-2" />
-      </label>
-
-      <label class="description w-100"
-        >Итого
-        <input type="number" class="w-100 mb-2" />
-      </label>
     </template>
   </Card>
 </template>
 <script setup lang="ts">
 import Card from 'primevue/card'
-import MyDropDown from './MyDropDown.vue'
 import LinesButton from './LinesButton.vue'
+import ProductInputs from './ProductInputs.vue'
 import { ref } from 'vue'
 
 const menu = ref(false)
@@ -75,7 +52,7 @@ document.addEventListener('click', () => {
 }
 
 .product__btn:hover {
-  background-color: #cfcfcf;
+  background-color: #eef3f8;
 }
 
 .product__btn:active {

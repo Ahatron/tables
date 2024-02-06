@@ -3,14 +3,18 @@ import ProductCard from './components/ProductCard.vue'
 import MyHeader from './components/MyHeader.vue'
 import AddRow from './components/AddRow.vue'
 import MyResults from './components/MyResults.vue'
+import ProductsTable from './components/ProductsTable.vue'
 </script>
 
 <template>
   <div class="app p-3 h-100 w-100">
     <MyHeader class="mb-4" />
     <AddRow class="mb-4" />
-    <ProductCard v-for="n in 3" :key="n" class="mb-4" />
-    <MyResults class="w-100 mb-3"></MyResults>
+    <ProductsTable class="d-none d-sm-flex " />
+    <ProductCard v-for="n in 3"
+      :key="n"
+      class="mb-4 d-sm-none" />
+    <MyResults class="w-100 mb-3 d-sm-none" />
   </div>
 </template>
 
@@ -28,6 +32,7 @@ body {
   color: #8f8f8f;
   font-size: x-small;
 }
+
 input {
   padding: 8px 10px;
   border: 2px solid #ccc;
@@ -60,5 +65,10 @@ input {
 .p-card-body {
   padding: 15px;
   gap: 0;
+}
+
+button {
+  border: 0;
+  background-color: inherit;
 }
 </style>
