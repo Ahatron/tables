@@ -59,9 +59,6 @@ const matchedValues = computed(() => {
     .sort()
 })
 
-// ffaa
-function findValues() {}
-
 document.addEventListener('click', () => (dropper.value = false))
 </script>
 
