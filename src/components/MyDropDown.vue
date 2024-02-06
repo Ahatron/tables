@@ -1,16 +1,11 @@
 <template>
-  <div class="my-dropdown">
+  <div class="my-dropdown position-relative">
     <div
       class="d-inline-flex align-items-stretch w-100 my-dropdown__input"
       @click.stop="dropper = !dropper"
     >
-      <input
-        @input="findValues"
-        :value="selectedValue"
-        type="text"
-        class="rounded-start border-end-0 p-2 w-100"
-      />
-      <button class="rounded-end w-auto border-start-0" style="background-color: #f6f5f3">
+      <input v-model="selectedValue" type="text" class="rounded-end-0 border-end-0 w-100" />
+      <button class="rounded-end w-auto border-start-0 p-0" style="background-color: #f6f5f3">
         <svg
           :class="dropper ? 'rotate' : ''"
           style="fill: #c0c0c0; transition: 0.2s"
@@ -24,9 +19,13 @@
       </button>
     </div>
 
-    <li v-if="dropper" @click.stop type="none" class="rounded shadow my-dropdown__list">
+    <li
+      v-show="dropper"
+      type="none"
+      class="rounded shadow position-absolute w-100 my-dropdown__list"
+    >
       <ul
-        v-for="item of matchedValues"
+        v-for="item in matchedValues"
         :key="item"
         @click="selectedValue = item"
         class="my-dropdown__list-item"
@@ -40,26 +39,28 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
 const dropper = ref(false),
   values = ref([
     'Мраморный щебень фр. 2-5 мм, 25кг',
     'Мраморный щебень фр. 2-5 мм, 25кг (белый)',
-    'Мраморный щебень фр. 2-5 мм, 25кг (вайт)'
+    'Мраморный щебень фр. 2-5 мм, 25кг (вайт)',
+    'Мраморный щебень фр. 2-5 мм, 25кг, возврат',
+    'Мраморный щебень фр. 2-5 мм, 1т'
   ]),
-  selectedValue = ref(''),
-  matchedValues = ref(values.value)
-// ff
-function findValues() {
-  if (selectedValue.value) {
-    matchedValues.value = values.value.filter((item: string) =>
-      item.startsWith(selectedValue.value)
+  selectedValue = ref('')
+
+const matchedValues = computed(() => {
+  return values.value
+    .filter((item: string) =>
+      item.toLocaleLowerCase().includes(selectedValue.value.toLocaleLowerCase())
     )
-  } else {
-    matchedValues.value = values.value
-  }
-}
+    .sort()
+})
+
+// ffaa
+function findValues() {}
 
 document.addEventListener('click', () => (dropper.value = false))
 </script>
@@ -67,6 +68,10 @@ document.addEventListener('click', () => (dropper.value = false))
 <style scoped>
 .rotate {
   transform: rotateZ(90deg);
+}
+.my-dropdown__list {
+  background-color: white;
+  z-index: 9999;
 }
 .my-dropdown__list-item {
   margin: 0;

@@ -2,13 +2,15 @@
 import ProductCard from './components/ProductCard.vue'
 import MyHeader from './components/MyHeader.vue'
 import AddRow from './components/AddRow.vue'
+import MyResults from './components/MyResults.vue'
 </script>
 
 <template>
-  <div class="app pt-3 px-3 h-100 w-100">
+  <div class="app p-3 h-100 w-100">
     <MyHeader class="mb-4" />
     <AddRow class="mb-4" />
-    <ProductCard />
+    <ProductCard v-for="n in 3" :key="n" class="mb-4" />
+    <MyResults class="w-100 mb-3"></MyResults>
   </div>
 </template>
 
@@ -16,8 +18,7 @@ import AddRow from './components/AddRow.vue'
 body {
   margin: 0;
   padding: 0;
-  width: 100vw;
-  height: 100vh;
+
   box-sizing: border-box;
 }
 
@@ -27,10 +28,11 @@ body {
   color: #8f8f8f;
   font-size: x-small;
 }
+input {
+  padding: 8px 10px;
+  border: 2px solid #ccc;
 
-.my-input {
-  width: 100%;
-  margin-bottom: 15px;
+  border-radius: 5px;
 }
 
 .p-dropdown,
@@ -51,15 +53,8 @@ body {
   padding: 0.6rem 0.9rem;
 }
 
-#app {
-  width: 100%;
-  height: 100%;
-}
-
 .app {
   background-color: #fbfcfd;
-  width: 100%;
-  height: 100%;
 }
 
 .p-card-body {

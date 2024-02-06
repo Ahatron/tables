@@ -16,36 +16,43 @@
         >
           <i class="pi pi-ellipsis-v w-100" style="color: #1253a2; font-size: small"></i>
         </button>
-        <div
-          v-show="menu"
-          class="position-absolute my-menu rounded-2 shadow p-2"
-          style="width: 179px; z-index: 9999; background-color: #fff; font-size: small"
+        <button
+          v-if="menu"
+          class="d-flex shadow position-absolute justify-content-start py-1 px-2 border-0 rounded product__btn"
         >
-          <button
-            class="d-flex justify-content-start py-1 px-2 w-100 border-0 rounded product__btn"
-          >
-            удалить
-          </button>
-        </div>
+          удалить
+        </button>
       </div>
 
-      <p class="description">Наименование еденицы</p>
-      <MyDropDown> </MyDropDown>
-      <p class="description">Цена</p>
-      <InputNumber class="my-input"></InputNumber>
-      <p class="description">Количество</p>
-      <InputNumber class="my-input"></InputNumber>
+      <label class="description w-100"
+        >Наименование еденицы
+        <MyDropDown class="w-100 mb-2" />
+      </label>
 
-      <p class="description">Название товара</p>
-      <MyDropDown></MyDropDown>
-      <p class="description">Итого</p>
-      <InputNumber class="my-input"></InputNumber>
+      <label class="description w-100"
+        >Цена
+        <input type="number" class="w-100 mb-2" />
+      </label>
+
+      <label class="description w-100"
+        >Количество
+        <input type="number" class="w-100 mb-2" />
+      </label>
+
+      <label class="description w-100"
+        >Название товара
+        <MyDropDown class="w-100 mb-2" />
+      </label>
+
+      <label class="description w-100"
+        >Итого
+        <input type="number" class="w-100 mb-2" />
+      </label>
     </template>
   </Card>
 </template>
 <script setup lang="ts">
 import Card from 'primevue/card'
-import InputNumber from 'primevue/inputnumber'
 import MyDropDown from './MyDropDown.vue'
 import LinesButton from './LinesButton.vue'
 import { ref } from 'vue'
@@ -59,6 +66,9 @@ document.addEventListener('click', () => {
 
 <style scoped>
 .product__btn {
+  width: 179px;
+  font-size: small;
+  z-index: 9999;
   background-color: #fff;
   transition: 0.2s;
   color: red;
