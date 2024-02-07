@@ -2,24 +2,21 @@
   <Card>
     <template #content>
       <p class="description mb-0">Номер строки</p>
-      <div class="mb-1 d-flex">
-        <LinesButton class="me-1" style="width: 12px; height: 20px"></LinesButton>
+      <div class="mb-1">
+        <LinesButton class="me-1"
+          style="width: 12px; height: 20px"></LinesButton>
         <span style="font-size: small">1</span>
       </div>
 
       <p class="description mb-0">Действие</p>
       <div class="position-relative">
-        <button
-          @click.stop="menu = !menu"
+        <button @click.stop="menu = !menu"
           class="border-0 m-0 p-0 mb-2 align-items-center"
-          style="background-color: #fff; width: 10px; height: 20px"
-        >
-          <i class="pi pi-ellipsis-v w-100" style="color: #1253a2; font-size: small"></i>
+          style="background-color: #fff; width: 10px; height: 20px">
+          <DotsVertical />
         </button>
-        <button
-          v-if="menu"
-          class="d-flex shadow position-absolute justify-content-start py-1 px-2 border-0 rounded product__btn"
-        >
+        <button v-if="menu"
+          class="d-flex shadow position-absolute justify-content-start py-1 px-2 border-0 rounded product__btn">
           удалить
         </button>
 
@@ -32,6 +29,7 @@
 import Card from 'primevue/card'
 import LinesButton from './LinesButton.vue'
 import ProductInputs from './ProductInputs.vue'
+import DotsVertical from '@/assets/DotsVertical.vue'
 import { ref } from 'vue'
 
 const menu = ref(false)

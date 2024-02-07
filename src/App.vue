@@ -70,5 +70,7 @@ input {
 button {
   border: 0;
   background-color: inherit;
+  margin: 0;
+  padding: 0;
 }
 </style>

@@ -15,14 +15,14 @@
 
     <div class="ms-auto position-relative">
       <button @click.stop="menu = !menu"
-        class="border-0 d-none d-sm-inline me-2"
+        class="border-0 d-none d-sm-inline p-1 pe-2"
         style="background-color: inherit">
         <MetalGear />
       </button>
       <div @click.stop
         v-if="menu"
-        class="shadow rounded position-absolute"
-        style="background-color: white; right: 0">
+        class="shadow rounded position-absolute me-2"
+        style="background-color: white; right: 0; ">
         <button class="py-1 menu-btn rounded-top px-2 border-0">
           Отображение столбцов
           <PathSvg class="ms-auto" />
