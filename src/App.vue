@@ -26,6 +26,10 @@ body {
   box-sizing: border-box;
 }
 
+.card {
+  border-color: #e7e7e7 !important;
+}
+
 .description {
   margin: 0;
   margin-bottom: 5px;
