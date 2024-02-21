@@ -50,6 +50,7 @@ function resizing(e: MouseEvent) {
     deltaX = clientX - startX,
     newWidth = startWidth + deltaX;
 
+
   verticalLine.style.left = thRight - resizeElem.offsetWidth + container.scrollLeft + 'px';
 
 
@@ -64,12 +65,6 @@ function resizeEnd() {
 
 
 let initialIndex = ref<number | null>(null);
-const col1 = ref<HTMLTableCellElement | null>(null),
-  col1Rect = col1.value?.getBoundingClientRect()
-const col2 = ref<HTMLTableCellElement | null>(null),
-  col2Rect = col2.value?.getBoundingClientRect();
-let left1 = 0, left2 = 0, right1 = 0, right2 = 0;
-const position1 = ref(''), position2 = ref('')
 
 function startDrag(e: MouseEvent, index: number) {
   if (initialIndex.value === null)
@@ -79,64 +74,52 @@ function startDrag(e: MouseEvent, index: number) {
   document.addEventListener("mouseup", handleMouseUp);
 };
 
-let repColIdx: number | null = null;
 
 function handleMouseMove(e: MouseEvent) {
-  if (table.value && repColIdx !== null && col1Rect && col2Rect) {
-    let cell = table.value.rows[0].cells[repColIdx + 1];
-    let rRect = cell.getBoundingClientRect();
-    console.log(e.clientX, ~~rRect.x, ~~rRect.right, cell)
 
-    left1 = col1Rect.left
-    left2 = col2Rect.left
-    right1 = col1Rect.right
-    right2 = col2Rect.right
-
-    position1.value = left1 + ' ' + right1
-    position2.value = left2 + ' ' + right2
-  }
 };
 
 function handleMouseOver(e: MouseEvent, index: number) {
   if (initialIndex.value === null || initialIndex.value === index) {
-    e.preventDefault()
     return false;
   }
 
   if (table.value) {
-    const rRect = table.value.rows[0]?.cells[index + 2].getBoundingClientRect();
-    repColIdx = index
+    const rRect = table.value.rows[0]?.cells[index + 2].getBoundingClientRect(),
+      sRect = table.value.rows[0]?.cells[initialIndex.value + 2].getBoundingClientRect()
+
+    console.log(table.value.rows[0]?.cells[initialIndex.value + 2], table.value.rows[0]?.cells[index + 2])
+    let toLeft: boolean | null = null
+
+    if (initialIndex.value > index &&
+      e.clientX < rRect.left + sRect.width) {
+      toLeft = true;
+    } else if (initialIndex.value < index &&
+      e.clientX > rRect.right - sRect.width) {
+      toLeft = false
+    } else {
+
+      return false;
+    }
+
+    [theadCells.value[index], theadCells.value[initialIndex.value]] =
+      [theadCells.value[initialIndex.value], theadCells.value[index]]
+
     for (let i = 1; i < table.value.rows.length; i++) {
       const row = table.value.rows[i],
-        selectedCell = row?.cells[initialIndex.value + 2],
-        replacementCell = row?.cells[index + 2]
+        selectedCell = row.cells[initialIndex.value + 2],
+        replacementCell = row.cells[index + 2]
 
-      if (initialIndex.value > index &&
-        e.clientX <= rRect.left + rRect.width) {
-
-        if (i === 1) [theadCells.value[index], theadCells.value[initialIndex.value]] =
-          [theadCells.value[initialIndex.value], theadCells.value[index]]
-
-        selectedCell.after(replacementCell)
-      } else if (initialIndex.value < index &&
-        e.clientX >= rRect.right - rRect.width) {
-
-        if (i === 1) [theadCells.value[index], theadCells.value[initialIndex.value]] =
-          [theadCells.value[initialIndex.value], theadCells.value[index]]
-
+      toLeft ? selectedCell.after(replacementCell) :
         selectedCell.before(replacementCell)
-      } else {
-        e.preventDefault()
-        return false;
-      }
     }
+    console.log('replaced')
     initialIndex.value = index
   }
 }
 
 function handleMouseUp() {
   initialIndex.value = null;
-  repColIdx = -1;
   document.removeEventListener("mousemove", handleMouseMove);
   document.removeEventListener("mouseup", handleMouseUp);
 };
@@ -164,6 +147,10 @@ function handleMouseUp() {
               :key="header"
               @mousedown="startDrag($event, index)"
               @mouseover="handleMouseOver($event, index)"> <span> {{ header }}</span>
+              <div class="replace-left"
+                @mouseenter="replace"></div>
+              <div class="replace-right"
+                @mouseenter="replace"></div>
               <div @mousedown.stop="resizeStart"
                 class="resize-handler"></div>
             </th>
@@ -187,17 +174,17 @@ function handleMouseUp() {
             <td>
               <MyDropDown class="w-100 " />
             </td>
-            <td ref="col2">
+            <td>
               <div>
                 <input type="text"
                   class="w-100 py-1 px-2">
-              </div>{{ position1 }}
+              </div>
             </td>
-            <td ref="col1">
+            <td>
               <div>
                 <input type="text"
                   class="w-100 py-1 px-2">
-              </div>{{ position2 }}
+              </div>
             </td>
             <td>
               <MyDropDown class="w-100 " />
@@ -248,7 +235,22 @@ th > span {
 }
 
 
+.replace-left,
+.replace-right {
+  position: absolute;
+  width: 0;
+  height: 100%;
+}
 
+.replace-left {
+  left: 0;
+  top: 0;
+}
+
+.replace-right {
+  right: 0;
+  top: 0;
+}
 
 th {
   position: relative;
