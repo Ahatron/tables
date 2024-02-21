@@ -3,91 +3,144 @@ import MetalGear from '@/assets/metal-gear.vue'
 import CombinedShape from '@/assets/combined-shape.vue'
 import DotsVertical from '@/assets/DotsVertical.vue';
 import MyDropDown from './MyDropDown.vue';
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 
-const theadCells = ref([{
-  header: 'Наименование еденицы',
-  id: 1
-}, {
-  header: 'Цена',
-  id: 2
-}, {
-  header: 'Кол-во',
-  id: 3
-}, {
-  header: 'Наименование товара',
-  id: 4
-}, {
-  header: 'Итого',
-  id: 5
-}]),
+const theadCells = ref(['Наименование еденицы', 'Цена', 'Кол-во', 'Наименование товара', 'Итого']),
   verticalLine = document.createElement('div');
 
-let startX = 0, startWidth = 0, tableContainer: HTMLDivElement, table: HTMLTableElement,
+let startX = 0, startWidth = 0, tableContainer = ref<HTMLDivElement>(), table = ref<HTMLTableElement>(),
   thElem: HTMLTableCellElement, resizeElem: HTMLElement, card: HTMLElement;
 
-function resizeStart(e: MouseEvent | any) {
+onMounted(() => {
   card = document.body.querySelector('.card:has(.table)') as HTMLElement;
-  tableContainer = card.querySelector('div.overflow-y-auto') as HTMLDivElement;
-  table = card.querySelector('table') as HTMLTableElement;
+})
+
+function resizeStart(e: MouseEvent | any) {
   resizeElem = e.target as HTMLElement;
   thElem = e.target.parentElement;
   startX = e.clientX;
-  startWidth = thElem.clientWidth - resizeElem.offsetWidth - 3;
-  const thRight = thElem.getBoundingClientRect().right,
+  startWidth = thElem.clientWidth - resizeElem.offsetWidth - 9;
+  const container = tableContainer.value as HTMLDivElement,
+    thRight = thElem.getBoundingClientRect().right,
     deltaX = e.clientX - startX,
     newWidth = startWidth + deltaX;
 
-  table.append(verticalLine);
+  if (table.value)
+    table.value.append(verticalLine);
   verticalLine.style.display = 'block';
   verticalLine.style.position = 'absolute';
   verticalLine.style.top = '0';
   verticalLine.style.bottom = '0';
   verticalLine.style.width = '2px';
   verticalLine.style.backgroundColor = '#dee2e6';
-  verticalLine.style.left = thRight - resizeElem.offsetWidth + tableContainer.scrollLeft + 'px';
+  verticalLine.style.left = thRight - resizeElem.offsetWidth + container.scrollLeft + 'px';
 
   thElem.style.width = `${newWidth}px`;
 
 
   document.addEventListener('mousemove', resizing);
+  document.addEventListener('mouseup', resizeEnd);
 }
 
 function resizing(e: MouseEvent) {
-  const
+  const container = tableContainer.value as HTMLDivElement,
     thRight = thElem.getBoundingClientRect().right,
     cardRight = card.getBoundingClientRect().right - 50,
     clientX = e.clientX <= cardRight ? e.clientX : cardRight,
     deltaX = clientX - startX,
     newWidth = startWidth + deltaX;
 
-  verticalLine.style.left = thRight - resizeElem.offsetWidth + tableContainer.scrollLeft + 'px';
+  verticalLine.style.left = thRight - resizeElem.offsetWidth + container.scrollLeft + 'px';
 
 
   thElem.style.width = `${newWidth}px`;
 }
 
-document.addEventListener('mouseup', () => {
+function resizeEnd() {
   verticalLine.style.display = 'none';
   document.removeEventListener('mousemove', resizing);
-});
-
-function onDragStart(e: DragEvent, id: number) {
-  const dataTransfer = e.dataTransfer as DataTransfer
-  dataTransfer.dropEffect = 'move'
-  dataTransfer.effectAllowed = 'move'
-  dataTransfer.setData('itemId', id.toString())
+  document.removeEventListener('mouseup', resizeEnd)
 }
 
-function onDrop(e: DragEvent, columnCount: number) {
-  const dataTransfer = e.dataTransfer as DataTransfer
-  const itemId = parseInt(dataTransfer.getData('itemId'))
-  theadCells.value = theadCells.value.map((th) => {
-    if (th.id == itemId)
-      [th.id, theadCells.value[columnCount - 1].id] = [columnCount, th.id]
-    return th
-  }).sort((a, b) => a.id - b.id)
+
+let initialIndex = ref<number | null>(null);
+const col1 = ref<HTMLTableCellElement | null>(null),
+  col1Rect = col1.value?.getBoundingClientRect()
+const col2 = ref<HTMLTableCellElement | null>(null),
+  col2Rect = col2.value?.getBoundingClientRect();
+let left1 = 0, left2 = 0, right1 = 0, right2 = 0;
+const position1 = ref(''), position2 = ref('')
+
+function startDrag(e: MouseEvent, index: number) {
+  if (initialIndex.value === null)
+    initialIndex.value = index;
+
+  document.addEventListener("mousemove", handleMouseMove);
+  document.addEventListener("mouseup", handleMouseUp);
+};
+
+let repColIdx: number | null = null;
+
+function handleMouseMove(e: MouseEvent) {
+  if (table.value && repColIdx !== null && col1Rect && col2Rect) {
+    let cell = table.value.rows[0].cells[repColIdx + 1];
+    let rRect = cell.getBoundingClientRect();
+    console.log(e.clientX, ~~rRect.x, ~~rRect.right, cell)
+
+    left1 = col1Rect.left
+    left2 = col2Rect.left
+    right1 = col1Rect.right
+    right2 = col2Rect.right
+
+    position1.value = left1 + ' ' + right1
+    position2.value = left2 + ' ' + right2
+  }
+};
+
+function handleMouseOver(e: MouseEvent, index: number) {
+  if (initialIndex.value === null || initialIndex.value === index) {
+    e.preventDefault()
+    return false;
+  }
+
+  if (table.value) {
+    const rRect = table.value.rows[0]?.cells[index + 2].getBoundingClientRect();
+    repColIdx = index
+    for (let i = 1; i < table.value.rows.length; i++) {
+      const row = table.value.rows[i],
+        selectedCell = row?.cells[initialIndex.value + 2],
+        replacementCell = row?.cells[index + 2]
+
+      if (initialIndex.value > index &&
+        e.clientX <= rRect.left + rRect.width) {
+
+        if (i === 1) [theadCells.value[index], theadCells.value[initialIndex.value]] =
+          [theadCells.value[initialIndex.value], theadCells.value[index]]
+
+        selectedCell.after(replacementCell)
+      } else if (initialIndex.value < index &&
+        e.clientX >= rRect.right - rRect.width) {
+
+        if (i === 1) [theadCells.value[index], theadCells.value[initialIndex.value]] =
+          [theadCells.value[initialIndex.value], theadCells.value[index]]
+
+        selectedCell.before(replacementCell)
+      } else {
+        e.preventDefault()
+        return false;
+      }
+    }
+    initialIndex.value = index
+  }
 }
+
+function handleMouseUp() {
+  initialIndex.value = null;
+  repColIdx = -1;
+  document.removeEventListener("mousemove", handleMouseMove);
+  document.removeEventListener("mouseup", handleMouseUp);
+};
+
 </script>
 
 <template>
@@ -99,22 +152,22 @@ function onDrop(e: DragEvent, columnCount: number) {
     </button>
 
 
-    <div class="overflow-y-auto mt-2 w-100">
-      <table class="table position-relative  table-bordered border-start-0 mb-0">
+    <div ref="tableContainer"
+      class="overflow-x-auto overflow-y-auto mt-2 w-100">
+      <table ref="table"
+        class="table position-relative  table-bordered border-start-0 mb-0">
         <thead>
-          <th style="width: 30px;"></th>
-          <th style="width: 20px;"></th>
-          <th v-for="n in theadCells.length"
-            :key="n"
-            @dragover.prevent
-            @dragenter.prevent
-            @drop="onDrop($event, n)"> <span> {{ theadCells[n - 1].header }}</span>
-            <div class="column-drag"
-              draggable="true"
-              @dragstart="onDragStart($event, theadCells[n - 1].id)"></div>
-            <div @mousedown="resizeStart"
-              class="resize-handler"></div>
-          </th>
+          <tr>
+            <th style="width: 30px;"></th>
+            <th style="width: 20px;"></th>
+            <th v-for="(header, index) in theadCells"
+              :key="header"
+              @mousedown="startDrag($event, index)"
+              @mouseover="handleMouseOver($event, index)"> <span> {{ header }}</span>
+              <div @mousedown.stop="resizeStart"
+                class="resize-handler"></div>
+            </th>
+          </tr>
         </thead>
         <tbody>
           <tr v-for="n in 4"
@@ -131,25 +184,30 @@ function onDrop(e: DragEvent, columnCount: number) {
                 <DotsVertical />
               </button>
             </td>
-            <td class="w-auto">
+            <td>
+              <MyDropDown class="w-100 " />
+            </td>
+            <td ref="col2">
+              <div>
+                <input type="text"
+                  class="w-100 py-1 px-2">
+              </div>{{ position1 }}
+            </td>
+            <td ref="col1">
+              <div>
+                <input type="text"
+                  class="w-100 py-1 px-2">
+              </div>{{ position2 }}
+            </td>
+            <td>
               <MyDropDown class="w-100 " />
 
             </td>
             <td>
-              <input type="number"
-                class="w-100 py-1 px-2">
-            </td>
-            <td>
-              <input type="number"
-                class="w-100 py-1 px-2">
-            </td>
-            <td class="w-auto">
-              <MyDropDown class="w-100 " />
-
-            </td>
-            <td>
-              <input type="number"
-                class="w-100 py-1 px-2">
+              <div>
+                <input type="number"
+                  class="w-100 py-1 px-2">
+              </div>
             </td>
           </tr>
         </tbody>
@@ -161,10 +219,19 @@ function onDrop(e: DragEvent, columnCount: number) {
 <style scoped>
 td,
 th {
-  padding: 10px;
+  padding: .8rem;
   vertical-align: middle;
   white-space: nowrap;
   font-size: small;
+  background-color: white;
+}
+
+thead > tr > th:first-child {
+  border-left: none;
+}
+
+thead > tr > th:last-child {
+  border-right: none;
 }
 
 
@@ -180,19 +247,11 @@ th > span {
   background-color: transparent;
 }
 
-.column-drag {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 5px;
-  bottom: 0;
-  padding: 0;
-  background-color: transparent;
-}
+
+
 
 th {
   position: relative;
-  max-width: 10%;
   user-select: none;
 }
 

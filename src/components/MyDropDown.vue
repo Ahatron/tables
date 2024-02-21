@@ -20,7 +20,7 @@
 
     <li v-show="dropper"
       type="none"
-      class="rounded shadow position-absolute w-100 my-dropdown__list">
+      class="rounded shadow position-absolute my-dropdown__list">
       <ul v-for="item in matchedValues"
         :key="item"
         @click="selectedValue = item"
@@ -65,11 +65,13 @@ document.addEventListener('click', () => (dropper.value = false))
 
 .my-dropdown__list {
   background-color: white;
+  width: inherit;
   z-index: 9999;
 }
 
 .my-dropdown__list-item {
   margin: 0;
+  z-index: 9999;
   padding: 10px 10px;
 }
 

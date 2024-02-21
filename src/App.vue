@@ -39,7 +39,7 @@ body {
 
 input {
   padding: 8px 10px;
-  border: 2px solid #ccc;
+  border: 2px solid #ccc !important;
 
   border-radius: 5px;
 }
