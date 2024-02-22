@@ -98,7 +98,7 @@ function startDrag(e: MouseEvent, index: number) {
     shiftX = (e.clientX - cellRect.left) + 16
     if (tableContainer.value) collCopyContainer.style.left = e.pageX - shiftX + tableContainer.value.scrollLeft + 'px'
 
-    collCopyContainer.style.width = cellRect.width + 'px !important'
+    collCopyContainer.style.width = cellRect.width + 'px'
 
 
 
@@ -111,15 +111,19 @@ function startDrag(e: MouseEvent, index: number) {
 
       newTR.style.border = 'none'
 
-      newTR.style.width = '100% !important'
+      newTR.style.display = 'flex'
+      newTR.style.flexDirection = 'column'
+      newTR.style.alignItems = 'stretch'
+      newTR.style.backgroundColor = 'white'
 
       newTR.append(copy)
 
       copy.style.border = 'none'
 
-      copy.style.width = '100% !important'
 
     }
+
+
 
     collCopyContainer.append(highlighting)
 
@@ -128,7 +132,7 @@ function startDrag(e: MouseEvent, index: number) {
     highlighting.style.left = '0'
     highlighting.style.right = '0'
     highlighting.style.bottom = '0'
-    highlighting.style.backgroundColor = 'rgba(0, 0, 255, 0.1)'
+    highlighting.style.backgroundColor = 'rgba(0, 0, 255, 0.3)'
     highlighting.style.zIndex = '6'
   }
 
