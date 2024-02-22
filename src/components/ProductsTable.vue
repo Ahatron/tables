@@ -3,37 +3,37 @@ import MetalGear from '@/assets/metal-gear.vue'
 import CombinedShape from '@/assets/combined-shape.vue'
 import DotsVertical from '@/assets/DotsVertical.vue';
 import MyDropDown from './MyDropDown.vue';
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 
 const theadCells = ref(['Наименование еденицы', 'Цена', 'Кол-во', 'Наименование товара', 'Итого']),
-  verticalLine = document.createElement('div');
+  tableContainer = ref<HTMLDivElement>(),
+  table = ref<HTMLTableElement>(),
+  card = ref<HTMLDivElement>()
 
-let startX = 0, startWidth = 0, tableContainer = ref<HTMLDivElement>(), table = ref<HTMLTableElement>(),
-  thElem: HTMLTableCellElement, resizeElem: HTMLElement, card: HTMLElement;
+let startX = 0, startWidth = 0, thElem: HTMLTableCellElement, resizeElem: HTMLElement, rsCollIdx: number | null;
 
-onMounted(() => {
-  card = document.body.querySelector('.card:has(.table)') as HTMLElement;
-})
 
-function resizeStart(e: MouseEvent | any) {
-  resizeElem = e.target as HTMLElement;
-  thElem = e.target.parentElement;
+
+function resizeStart(e: MouseEvent, index: number) {
+  resizeElem = e.target as HTMLDivElement;
+  thElem = resizeElem.parentElement as HTMLTableCellElement;
   startX = e.clientX;
-  startWidth = thElem.clientWidth - resizeElem.offsetWidth - 9;
-  const container = tableContainer.value as HTMLDivElement,
-    thRight = thElem.getBoundingClientRect().right,
+  startWidth = thElem.clientWidth - resizeElem.offsetWidth + 1;
+  const
     deltaX = e.clientX - startX,
     newWidth = startWidth + deltaX;
 
-  if (table.value)
-    table.value.append(verticalLine);
-  verticalLine.style.display = 'block';
-  verticalLine.style.position = 'absolute';
-  verticalLine.style.top = '0';
-  verticalLine.style.bottom = '0';
-  verticalLine.style.width = '2px';
-  verticalLine.style.backgroundColor = '#dee2e6';
-  verticalLine.style.left = thRight - resizeElem.offsetWidth + container.scrollLeft + 'px';
+  rsCollIdx = index
+
+  if (table.value) {
+    const rows = table.value.rows
+    for (let i = 0; i < rows.length; i++) {
+      const cell = rows[i].cells[index + 2] as HTMLTableCellElement;
+
+      cell.style.borderRight = '3px solid #dee2e6'
+    }
+  }
+
 
   thElem.style.width = `${newWidth}px`;
 
@@ -43,83 +43,179 @@ function resizeStart(e: MouseEvent | any) {
 }
 
 function resizing(e: MouseEvent) {
-  const container = tableContainer.value as HTMLDivElement,
-    thRight = thElem.getBoundingClientRect().right,
-    cardRight = card.getBoundingClientRect().right - 50,
-    clientX = e.clientX <= cardRight ? e.clientX : cardRight,
-    deltaX = clientX - startX,
-    newWidth = startWidth + deltaX;
+  if (card.value) {
+    const cardRight = card.value.getBoundingClientRect().right - 50,
+      clientX = e.clientX <= cardRight ? e.clientX : cardRight,
+      deltaX = clientX - startX,
+      newWidth = startWidth + deltaX;
 
 
-  verticalLine.style.left = thRight - resizeElem.offsetWidth + container.scrollLeft + 'px';
-
-
-  thElem.style.width = `${newWidth}px`;
+    thElem.style.width = `${newWidth}px`;
+  }
 }
 
 function resizeEnd() {
-  verticalLine.style.display = 'none';
+  if (table.value && rsCollIdx !== null) {
+    const rows = table.value.rows
+    for (let i = 0; i < rows.length; i++) {
+      const cell = rows[i].cells[rsCollIdx + 2] as HTMLTableCellElement;
+
+      if (i > 0)
+        cell.style.borderRight = 'none'
+      else cell.style.borderRight = '1px solid #dee2e6'
+    }
+  }
+
+  rsCollIdx = null
   document.removeEventListener('mousemove', resizing);
   document.removeEventListener('mouseup', resizeEnd)
 }
 
 
-let initialIndex = ref<number | null>(null);
+const initialIndex = ref<number | null>(null),
+  repIndex = ref<number | null>(null),
+  toLeft = ref<boolean | null>(null)
+
+let rightHandler: HTMLDivElement | null, leftHandler: HTMLDivElement | null, shiftX = 0,
+  collCopyContainer = document.createElement('div');
 
 function startDrag(e: MouseEvent, index: number) {
   if (initialIndex.value === null)
     initialIndex.value = index;
 
+  if (table.value) {
+    const rows = table.value.rows,
+      selectedCell = rows[0].cells[initialIndex.value + 2] as HTMLTableCellElement,
+      highlighting = document.createElement('div'),
+      cellRect = selectedCell.getBoundingClientRect()
+
+    table.value.append(collCopyContainer)
+
+    collCopyContainer.style.pointerEvents = 'none'
+    collCopyContainer.style.position = 'absolute'
+    collCopyContainer.style.zIndex = '5'
+    collCopyContainer.style.top = '0'
+    shiftX = (e.clientX - cellRect.left) + 16
+    if (tableContainer.value) collCopyContainer.style.left = e.pageX - shiftX + tableContainer.value.scrollLeft + 'px'
+
+    collCopyContainer.style.width = cellRect.width + 'px !important'
+
+
+
+    for (let i = 0; i < rows.length; i++) {
+      const cell = rows[i].cells[initialIndex.value + 2] as HTMLTableCellElement,
+        copy = cell.cloneNode(true) as HTMLTableCellElement,
+        newTR = document.createElement('tr')
+
+      collCopyContainer.append(newTR)
+
+      newTR.style.border = 'none'
+
+      newTR.style.width = '100% !important'
+
+      newTR.append(copy)
+
+      copy.style.border = 'none'
+
+      copy.style.width = '100% !important'
+
+    }
+
+    collCopyContainer.append(highlighting)
+
+    highlighting.style.position = 'absolute'
+    highlighting.style.top = '0'
+    highlighting.style.left = '0'
+    highlighting.style.right = '0'
+    highlighting.style.bottom = '0'
+    highlighting.style.backgroundColor = 'rgba(0, 0, 255, 0.1)'
+    highlighting.style.zIndex = '6'
+  }
+
   document.addEventListener("mousemove", handleMouseMove);
   document.addEventListener("mouseup", handleMouseUp);
-};
+}
 
 
 function handleMouseMove(e: MouseEvent) {
-
-};
+  if (table.value && initialIndex.value !== null && tableContainer.value) {
+    collCopyContainer.style.left = e.pageX - shiftX + tableContainer.value.scrollLeft + 'px'
+  }
+}
 
 function handleMouseOver(e: MouseEvent, index: number) {
   if (initialIndex.value === null || initialIndex.value === index) {
     return false;
   }
 
+  console.log('over')
+
+  repIndex.value = index
+
   if (table.value) {
-    const rRect = table.value.rows[0]?.cells[index + 2].getBoundingClientRect(),
-      sRect = table.value.rows[0]?.cells[initialIndex.value + 2].getBoundingClientRect()
+    const rColl = table.value.rows[0]?.cells[index + 2],
+      sColl = table.value.rows[0]?.cells[initialIndex.value + 2]
 
-    console.log(table.value.rows[0]?.cells[initialIndex.value + 2], table.value.rows[0]?.cells[index + 2])
-    let toLeft: boolean | null = null
+    rightHandler = rColl.querySelector('.replace-right') as HTMLDivElement
+    leftHandler = rColl.querySelector('.replace-left') as HTMLDivElement
 
-    if (initialIndex.value > index &&
-      e.clientX < rRect.left + sRect.width) {
-      toLeft = true;
-    } else if (initialIndex.value < index &&
-      e.clientX > rRect.right - sRect.width) {
-      toLeft = false
+
+    if (initialIndex.value > index) {
+      toLeft.value = true;
+      leftHandler.style.width = sColl.offsetWidth + 'px'
+    } else if (initialIndex.value < index
+    ) {
+      toLeft.value = false
+      rightHandler.style.width = sColl.offsetWidth + 'px'
     } else {
-
       return false;
     }
+  }
+}
 
-    [theadCells.value[index], theadCells.value[initialIndex.value]] =
-      [theadCells.value[initialIndex.value], theadCells.value[index]]
+function replace() {
+  if (table.value && initialIndex.value !== null && repIndex.value !== null) {
+
+    [theadCells.value[repIndex.value], theadCells.value[initialIndex.value]] =
+      [theadCells.value[initialIndex.value], theadCells.value[repIndex.value]]
 
     for (let i = 1; i < table.value.rows.length; i++) {
       const row = table.value.rows[i],
         selectedCell = row.cells[initialIndex.value + 2],
-        replacementCell = row.cells[index + 2]
+        replacementCell = row.cells[repIndex.value + 2]
 
-      toLeft ? selectedCell.after(replacementCell) :
+      if (toLeft.value) {
+        selectedCell.after(replacementCell)
+        if (leftHandler) leftHandler.style.width = '0'
+      } else {
         selectedCell.before(replacementCell)
+        if (rightHandler) rightHandler.style.width = '0'
+      }
     }
     console.log('replaced')
-    initialIndex.value = index
+    initialIndex.value = repIndex.value
   }
+}
+
+function mouseLeave() {
+  if (rightHandler) rightHandler.style.width = '0'
+  if (leftHandler) leftHandler.style.width = '0'
 }
 
 function handleMouseUp() {
   initialIndex.value = null;
+  repIndex.value = null;
+  toLeft.value = null;
+
+  collCopyContainer.innerHTML = ''
+  collCopyContainer.remove()
+
+  if (rightHandler) rightHandler.style.width = '0'
+  if (leftHandler) leftHandler.style.width = '0'
+
+  rightHandler = null;
+  leftHandler = null;
+
   document.removeEventListener("mousemove", handleMouseMove);
   document.removeEventListener("mouseup", handleMouseUp);
 };
@@ -127,7 +223,8 @@ function handleMouseUp() {
 </script>
 
 <template>
-  <div class="card shadow rounded pt-1 pb-3 d-flex flex-column"
+  <div ref="card"
+    class="card shadow rounded pt-1 pb-3 d-flex flex-column"
     style="background-color: #fff">
     <button class="border-0 ms-auto  me-2 "
       style="background-color: inherit; ">
@@ -146,12 +243,13 @@ function handleMouseUp() {
             <th v-for="(header, index) in theadCells"
               :key="header"
               @mousedown="startDrag($event, index)"
-              @mouseover="handleMouseOver($event, index)"> <span> {{ header }}</span>
+              @mouseenter="handleMouseOver($event, index)"
+              @mouseleave="mouseLeave"> <span> {{ header }}</span>
               <div class="replace-left"
                 @mouseenter="replace"></div>
               <div class="replace-right"
                 @mouseenter="replace"></div>
-              <div @mousedown.stop="resizeStart"
+              <div @mousedown.stop="resizeStart($event, index)"
                 class="resize-handler"></div>
             </th>
           </tr>
@@ -240,6 +338,8 @@ th > span {
   position: absolute;
   width: 0;
   height: 100%;
+  transition: .05s;
+  background-color: rgba(0, 0, 255, 0.5);
 }
 
 .replace-left {
