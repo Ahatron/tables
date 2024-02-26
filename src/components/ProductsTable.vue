@@ -119,10 +119,7 @@ function startDrag(e: MouseEvent, index: number) {
       newTR.append(copy)
 
       copy.style.border = 'none'
-
-
     }
-
 
 
     collCopyContainer.append(highlighting)
@@ -151,8 +148,6 @@ function handleMouseOver(e: MouseEvent, index: number) {
   if (initialIndex.value === null || initialIndex.value === index) {
     return false;
   }
-
-  console.log('over')
 
   repIndex.value = index
 
@@ -190,13 +185,10 @@ function replace() {
 
       if (toLeft.value) {
         selectedCell.after(replacementCell)
-        if (leftHandler) leftHandler.style.width = '0'
       } else {
         selectedCell.before(replacementCell)
-        if (rightHandler) rightHandler.style.width = '0'
       }
     }
-    console.log('replaced')
     initialIndex.value = repIndex.value
   }
 }
@@ -224,6 +216,87 @@ function handleMouseUp() {
   document.removeEventListener("mouseup", handleMouseUp);
 };
 
+let selectedRowIdx: number | null = null, selectedRow: HTMLTableRowElement, shiftY = 0;
+const dropRow: HTMLTableRowElement = document.createElement('tr'),
+  dropRowContent: HTMLTableCellElement = document.createElement('td')
+
+
+function startRowDrag(e: MouseEvent, index: number) {
+  if (!table.value) return false;
+
+  const row = table.value.rows[index],
+    rowTop = row.getBoundingClientRect().top,
+    tableTop = table.value.getBoundingClientRect().top
+
+  selectedRowIdx = index
+  selectedRow = row
+  shiftY = e.clientY - rowTop
+
+  row.after(dropRow)
+  dropRow.append(dropRowContent)
+
+  dropRowContent.textContent = 'here'
+  dropRowContent.style.color = 'transparent'
+  dropRowContent.style.border = 'none'
+
+  dropRow.style.borderRadius = '10px'
+  dropRow.style.outline = '4px dashed #a6b7d4'
+  dropRow.style.outlineOffset = '-3px'
+
+  // row.classList.add('position-absolute', 'shadow')
+  // row.style.top = e.clientY - tableTop - shiftY + 'px'
+  // row.style.zIndex = '5'
+  row.classList.add('d-none')
+  for (let i = 0; i < row.children.length; i++) {
+    const firstRowCellWidth = table.value.rows[0].cells[i].offsetWidth
+    row.cells[i].style.width = firstRowCellWidth + 'px'
+  }
+
+  document.addEventListener("mousemove", rowMove);
+  document.addEventListener('mouseup', rowDragEnd);
+}
+
+function rowMove(e: MouseEvent) {
+  if (!table.value) return false;
+
+  const tableTop = table.value.getBoundingClientRect().top
+
+  // selectedRow.style.top = e.clientY - tableTop - shiftY + 'px'
+}
+
+function rowOver(e: MouseEvent, index: number) {
+  if (!table.value || selectedRowIdx === null) return false;
+
+  console.log('ok')
+  const row = table.value.rows[index + 1]
+
+  console.log(selectedRowIdx, index, row)
+  if (selectedRowIdx < index) {
+    console.log('down')
+    row.after(dropRow)
+  } else if (selectedRowIdx > index) {
+    console.log('up')
+
+    row.before(dropRow)
+  }
+
+  selectedRowIdx = index
+
+}
+
+function rowDragEnd() {
+  selectedRow.classList.remove('position-absolute', 'shadow')
+  selectedRow.classList.remove('d-none')
+
+  selectedRowIdx = null
+  dropRow.remove()
+  for (let i = 0; i < selectedRow.children.length; i++) {
+    selectedRow.cells[i].style.width = 'inherit'
+  }
+
+  document.removeEventListener('mousemove', rowMove)
+  document.removeEventListener('mouseup', rowDragEnd)
+}
 </script>
 
 <template>
@@ -260,8 +333,10 @@ function handleMouseUp() {
         </thead>
         <tbody>
           <tr v-for="n in 4"
-            :key="n">
-            <td style=" font-weight: 600; font-size: small;">
+            :key="n"
+            @mouseover="rowOver($event, n)">
+            <td @mousedown="startRowDrag($event, n)"
+              style=" font-weight: 600; font-size: small; user-select: none;">
               <button class="p-0 me-1"
                 style="width: 10px;">
                 <CombinedShape :vw="10" />
@@ -299,6 +374,7 @@ function handleMouseUp() {
               </div>
             </td>
           </tr>
+
         </tbody>
       </table>
     </div>
