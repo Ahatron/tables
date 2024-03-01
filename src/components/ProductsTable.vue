@@ -1,39 +1,53 @@
 <script setup lang="ts">
-import MetalGear from '@/assets/metal-gear.vue'
+import MyResults from '@/components/MyResults.vue';
 import CombinedShape from '@/assets/combined-shape.vue'
-import DotsVertical from '@/assets/DotsVertical.vue';
-import MyDropDown from './MyDropDown.vue';
-import { ref } from 'vue'
+import ActionButton from './ActionButton.vue';
+import MyDropDown from '@/components/MyDropDown.vue';
+import ColumnOptions from '@/components/ColumnOptions.vue'
+import useGlobalStore from '@/stores/global.store'
+import { onMounted, ref } from 'vue'
 
-const theadCells = ref(['Наименование еденицы', 'Цена', 'Кол-во', 'Наименование товара', 'Итого']),
+const globalStore = useGlobalStore()
+
+const
   tableContainer = ref<HTMLDivElement>(),
   table = ref<HTMLTableElement>(),
   card = ref<HTMLDivElement>()
 
-let startX = 0, startWidth = 0, thElem: HTMLTableCellElement, resizeElem: HTMLElement, rsCollIdx: number | null;
+onMounted(() => {
+  globalStore.table = table.value
+})
 
 
+let startX = 0,
+  startWidth = 0,
+  thElem: HTMLTableCellElement,
+  rsCollIdx: number | null;
 
-function resizeStart(e: MouseEvent, index: number) {
-  resizeElem = e.target as HTMLDivElement;
+
+function resizeStart(e: MouseEvent) {
+  if (!table.value) return false
+
+  const resizeElem = e.currentTarget as HTMLDivElement
+
   thElem = resizeElem.parentElement as HTMLTableCellElement;
   startX = e.clientX;
   startWidth = thElem.clientWidth - resizeElem.offsetWidth + 1;
-  const
-    deltaX = e.clientX - startX,
+
+  const deltaX = e.clientX - startX,
     newWidth = startWidth + deltaX;
 
-  rsCollIdx = index
+  const headers = Array.from(table.value.rows[0].cells)
+  rsCollIdx = headers.findIndex(cell => cell === thElem);
 
-  if (table.value) {
-    const rows = table.value.rows
-    for (let i = 0; i < rows.length; i++) {
-      const cell = rows[i].cells[index + 2] as HTMLTableCellElement;
+  // headers.forEach(cell => cell.style.width = cell.offsetWidth - resizeElem.offsetWidth + 'px')
 
-      cell.style.borderRight = '3px solid #dee2e6'
-    }
+  const rows = table.value.rows
+
+  for (let i = 0; i < rows.length; i++) {
+    const cell = rows[i].cells[rsCollIdx] as HTMLTableCellElement;
+    cell.style.borderRight = '3px solid #dee2e6'
   }
-
 
   thElem.style.width = `${newWidth}px`;
 
@@ -57,12 +71,11 @@ function resizing(e: MouseEvent) {
 function resizeEnd() {
   if (table.value && rsCollIdx !== null) {
     const rows = table.value.rows
-    for (let i = 0; i < rows.length; i++) {
-      const cell = rows[i].cells[rsCollIdx + 2] as HTMLTableCellElement;
 
-      if (i > 0)
-        cell.style.borderRight = 'none'
-      else cell.style.borderRight = '1px solid #dee2e6'
+    for (let i = 0; i < rows.length; i++) {
+      const cell = rows[i].cells[rsCollIdx] as HTMLTableCellElement;
+
+      cell.style.borderRight = ''
     }
   }
 
@@ -72,124 +85,122 @@ function resizeEnd() {
 }
 
 
-const initialIndex = ref<number | null>(null),
-  repIndex = ref<number | null>(null),
-  toLeft = ref<boolean | null>(null)
+let initialIndex: number | null = null,
+  repIndex: number | null = null,
+  toLeft: boolean | null = null,
+  rightHandler: HTMLDivElement | null,
+  leftHandler: HTMLDivElement | null,
+  shiftX = 0;
+const collCopyContainer = document.createElement('div');
 
-let rightHandler: HTMLDivElement | null, leftHandler: HTMLDivElement | null, shiftX = 0,
-  collCopyContainer = document.createElement('div');
+function startDrag(e: MouseEvent) {
+  const target = e.currentTarget as HTMLTableCellElement
+  if (initialIndex !== null || !table.value) return false
 
-function startDrag(e: MouseEvent, index: number) {
-  if (initialIndex.value === null)
-    initialIndex.value = index;
+  initialIndex = Array.from(table.value.rows[0].cells).findIndex(cell => cell === target);
 
-  if (table.value) {
-    const rows = table.value.rows,
-      selectedCell = rows[0].cells[initialIndex.value + 2] as HTMLTableCellElement,
-      highlighting = document.createElement('div'),
-      cellRect = selectedCell.getBoundingClientRect()
-
-    table.value.append(collCopyContainer)
-
-    collCopyContainer.style.pointerEvents = 'none'
-    collCopyContainer.style.position = 'absolute'
-    collCopyContainer.style.zIndex = '5'
-    collCopyContainer.style.top = '0'
-    shiftX = (e.clientX - cellRect.left) + 16
-    if (tableContainer.value) collCopyContainer.style.left = e.pageX - shiftX + tableContainer.value.scrollLeft + 'px'
-
-    collCopyContainer.style.width = cellRect.width + 'px'
+  const rows = table.value.rows,
+    selectedCell = rows[0].cells[initialIndex] as HTMLTableCellElement,
+    highlighting = document.createElement('div'),
+    cellRect = selectedCell.getBoundingClientRect()
 
 
+  table.value.append(collCopyContainer)
 
-    for (let i = 0; i < rows.length; i++) {
-      const cell = rows[i].cells[initialIndex.value + 2] as HTMLTableCellElement,
-        copy = cell.cloneNode(true) as HTMLTableCellElement,
-        newTR = document.createElement('tr')
+  collCopyContainer.style.opacity = '0.8'
+  collCopyContainer.style.pointerEvents = 'none'
+  collCopyContainer.style.position = 'absolute'
+  collCopyContainer.style.zIndex = '5'
+  collCopyContainer.style.top = '0'
+  shiftX = (e.clientX - cellRect.left) + 16
+  if (tableContainer.value) collCopyContainer.style.left = e.pageX - shiftX + tableContainer.value.scrollLeft + 'px'
 
-      collCopyContainer.append(newTR)
-
-      newTR.style.border = 'none'
-
-      newTR.style.display = 'flex'
-      newTR.style.flexDirection = 'column'
-      newTR.style.alignItems = 'stretch'
-      newTR.style.backgroundColor = 'white'
-
-      newTR.append(copy)
-
-      copy.style.border = 'none'
-    }
+  collCopyContainer.style.width = cellRect.width + 'px'
 
 
-    collCopyContainer.append(highlighting)
 
-    highlighting.style.position = 'absolute'
-    highlighting.style.top = '0'
-    highlighting.style.left = '0'
-    highlighting.style.right = '0'
-    highlighting.style.bottom = '0'
-    highlighting.style.backgroundColor = 'rgba(0, 0, 255, 0.3)'
-    highlighting.style.zIndex = '6'
+  for (let i = 0; i < rows.length; i++) {
+    const cell = rows[i].cells[initialIndex] as HTMLTableCellElement,
+      copy = cell.cloneNode(true) as HTMLTableCellElement,
+      newTR = document.createElement('tr')
+
+    collCopyContainer.append(newTR)
+
+    newTR.classList.add('border-0', 'd-flex', 'flex-column', i > 0 ? 'align-items-center' : 'align-items-start')
+
+    newTR.style.backgroundColor = 'white'
+
+    newTR.append(copy)
+
+    copy.classList.add('border-0', 'w-100')
+    copy.style.height = cell.offsetHeight + 'px'
   }
+
+
+  collCopyContainer.append(highlighting)
+
+  highlighting.style.position = 'absolute'
+  highlighting.style.top = '0'
+  highlighting.style.left = '0'
+  highlighting.style.right = '0'
+  highlighting.style.bottom = '0'
+  highlighting.style.backgroundColor = 'rgba(0, 0, 255, 0.3)'
+  highlighting.style.zIndex = '6'
 
   document.addEventListener("mousemove", handleMouseMove);
   document.addEventListener("mouseup", handleMouseUp);
 }
 
-
 function handleMouseMove(e: MouseEvent) {
-  if (table.value && initialIndex.value !== null && tableContainer.value) {
+  if (table.value && initialIndex !== null && tableContainer.value) {
     collCopyContainer.style.left = e.pageX - shiftX + tableContainer.value.scrollLeft + 'px'
   }
 }
 
-function handleMouseOver(e: MouseEvent, index: number) {
-  if (initialIndex.value === null || initialIndex.value === index) {
+function handleMouseOver(e: MouseEvent) {
+  if (initialIndex === null || !table.value) return false;
+
+  const target = e.currentTarget as HTMLTableCellElement
+
+  repIndex = Array.from(table.value.rows[0].cells).findIndex(cell => cell === target);
+
+  const rColl = table.value.rows[0].cells[repIndex],
+    sColl = table.value.rows[0].cells[initialIndex]
+
+  rightHandler = rColl.querySelector('.replace-right') as HTMLDivElement
+  leftHandler = rColl.querySelector('.replace-left') as HTMLDivElement
+
+
+  if (initialIndex > repIndex) {
+    toLeft = true;
+    leftHandler.style.width = sColl.offsetWidth + 'px'
+  } else if (initialIndex < repIndex
+  ) {
+    toLeft = false
+    rightHandler.style.width = sColl.offsetWidth + 'px'
+  } else {
     return false;
-  }
-
-  repIndex.value = index
-
-  if (table.value) {
-    const rColl = table.value.rows[0]?.cells[index + 2],
-      sColl = table.value.rows[0]?.cells[initialIndex.value + 2]
-
-    rightHandler = rColl.querySelector('.replace-right') as HTMLDivElement
-    leftHandler = rColl.querySelector('.replace-left') as HTMLDivElement
-
-
-    if (initialIndex.value > index) {
-      toLeft.value = true;
-      leftHandler.style.width = sColl.offsetWidth + 'px'
-    } else if (initialIndex.value < index
-    ) {
-      toLeft.value = false
-      rightHandler.style.width = sColl.offsetWidth + 'px'
-    } else {
-      return false;
-    }
   }
 }
 
 function replace() {
-  if (table.value && initialIndex.value !== null && repIndex.value !== null) {
+  if (table.value && initialIndex !== null && repIndex !== null) {
 
-    [theadCells.value[repIndex.value], theadCells.value[initialIndex.value]] =
-      [theadCells.value[initialIndex.value], theadCells.value[repIndex.value]]
+    [globalStore.theadCells[initialIndex], globalStore.theadCells[repIndex]] =
+      [globalStore.theadCells[repIndex], globalStore.theadCells[initialIndex]]
 
-    for (let i = 1; i < table.value.rows.length; i++) {
+    for (let i = 0; i < table.value.rows.length; i++) {
       const row = table.value.rows[i],
-        selectedCell = row.cells[initialIndex.value + 2],
-        replacementCell = row.cells[repIndex.value + 2]
+        selectedCell = row.cells[initialIndex],
+        replacementCell = row.cells[repIndex]
 
-      if (toLeft.value) {
+      if (toLeft) {
         selectedCell.after(replacementCell)
       } else {
         selectedCell.before(replacementCell)
       }
     }
-    initialIndex.value = repIndex.value
+    initialIndex = repIndex
   }
 }
 
@@ -199,9 +210,9 @@ function mouseLeave() {
 }
 
 function handleMouseUp() {
-  initialIndex.value = null;
-  repIndex.value = null;
-  toLeft.value = null;
+  initialIndex = null;
+  repIndex = null;
+  toLeft = null;
 
   collCopyContainer.innerHTML = ''
   collCopyContainer.remove()
@@ -216,15 +227,18 @@ function handleMouseUp() {
   document.removeEventListener("mouseup", handleMouseUp);
 };
 
+
 let selectedRowIdx: number | null = null, selectedRow: HTMLTableRowElement, shiftY = 0;
 const dropRow: HTMLTableRowElement = document.createElement('tr'),
   dropRowContent: HTMLTableCellElement = document.createElement('td')
 
 
-function startRowDrag(e: MouseEvent, index: number) {
+function startRowDrag(e: MouseEvent) {
   if (!table.value) return false;
 
-  const row = table.value.rows[index],
+  const target = e.currentTarget as HTMLTableCellElement,
+    row = target.parentElement as HTMLTableRowElement,
+    index = Array.from(table.value.rows).findIndex(item => item === row),
     rowTop = row.getBoundingClientRect().top,
     tableTop = table.value.getBoundingClientRect().top
 
@@ -235,18 +249,20 @@ function startRowDrag(e: MouseEvent, index: number) {
   row.after(dropRow)
   dropRow.append(dropRowContent)
 
-  dropRowContent.textContent = 'here'
+  dropRowContent.textContent = '...'
   dropRowContent.style.color = 'transparent'
   dropRowContent.style.border = 'none'
 
-  dropRow.style.borderRadius = '10px'
+  dropRow.classList.add('user-select-none', 'rounded-2')
   dropRow.style.outline = '4px dashed #a6b7d4'
   dropRow.style.outlineOffset = '-3px'
+  dropRow.style.height = row.clientHeight + 'px'
 
-  // row.classList.add('position-absolute', 'shadow')
-  // row.style.top = e.clientY - tableTop - shiftY + 'px'
-  // row.style.zIndex = '5'
-  row.classList.add('d-none')
+  row.classList.add('position-absolute', 'shadow', 'opacity-75')
+  row.style.top = e.clientY - tableTop - shiftY + 'px'
+  row.style.zIndex = '5'
+  row.style.pointerEvents = 'none'
+
   for (let i = 0; i < row.children.length; i++) {
     const firstRowCellWidth = table.value.rows[0].cells[i].offsetWidth
     row.cells[i].style.width = firstRowCellWidth + 'px'
@@ -261,105 +277,113 @@ function rowMove(e: MouseEvent) {
 
   const tableTop = table.value.getBoundingClientRect().top
 
-  // selectedRow.style.top = e.clientY - tableTop - shiftY + 'px'
+  selectedRow.style.top = e.clientY - tableTop - shiftY + 'px'
 }
 
-function rowOver(e: MouseEvent, index: number) {
+function rowOver(e: MouseEvent) {
   if (!table.value || selectedRowIdx === null) return false;
 
-  console.log('ok')
-  const row = table.value.rows[index + 1]
+  const row = e.target as HTMLTableRowElement,
+    index = Array.from(table.value.rows).findIndex(item => item === row)
 
-  console.log(selectedRowIdx, index, row)
+
   if (selectedRowIdx < index) {
-    console.log('down')
     row.after(dropRow)
   } else if (selectedRowIdx > index) {
-    console.log('up')
-
     row.before(dropRow)
   }
 
   selectedRowIdx = index
-
 }
 
 function rowDragEnd() {
-  selectedRow.classList.remove('position-absolute', 'shadow')
-  selectedRow.classList.remove('d-none')
+  if (!table.value) return false
+
+  selectedRow.classList.remove('position-absolute', 'shadow', 'opacity-75')
+  selectedRow.classList.add('w-100')
+  selectedRow.style.pointerEvents = ''
 
   selectedRowIdx = null
+
+  dropRow.after(selectedRow)
   dropRow.remove()
-  for (let i = 0; i < selectedRow.children.length; i++) {
-    selectedRow.cells[i].style.width = 'inherit'
+
+  for (let i = 0; i < selectedRow.cells.length; i++) {
+    selectedRow.cells[i].style.width = ''
   }
+
+  const rows = table.value.rows
+  for (let i = 1; i < rows.length; i++) {
+    const count = rows[i].querySelector('b') as HTMLElement
+    count.textContent = `${i}`
+  }
+
 
   document.removeEventListener('mousemove', rowMove)
   document.removeEventListener('mouseup', rowDragEnd)
 }
+
 </script>
 
 <template>
   <div ref="card"
     class="card shadow rounded pt-1 pb-3 d-flex flex-column"
     style="background-color: #fff">
-    <button class="border-0 ms-auto  me-2 "
-      style="background-color: inherit; ">
-      <MetalGear />
-    </button>
+    <column-options />
 
 
     <div ref="tableContainer"
-      class="overflow-x-auto overflow-y-auto mt-2 w-100">
+      class="overflow-auto mt-2 mb-1 pb-3  w-100">
       <table ref="table"
         class="table position-relative  table-bordered border-start-0 mb-0">
         <thead>
           <tr>
-            <th style="width: 30px;"></th>
-            <th style="width: 20px;"></th>
-            <th v-for="(header, index) in theadCells"
-              :key="header"
-              @mousedown="startDrag($event, index)"
-              @mouseenter="handleMouseOver($event, index)"
-              @mouseleave="mouseLeave"> <span> {{ header }}</span>
+            <th v-for="({ name }, i) in globalStore.theadCells"
+              :key="name"
+              @mousedown="startDrag"
+              @mouseenter="handleMouseOver"
+              @mouseleave="mouseLeave">
+              <span :style="{ 'min-width': i > 1 ? '60px !important' : '' }"> {{ name }}</span>
               <div class="replace-left"
                 @mouseenter="replace"></div>
               <div class="replace-right"
                 @mouseenter="replace"></div>
-              <div @mousedown.stop="resizeStart($event, index)"
+              <div @mousedown.stop="resizeStart"
                 class="resize-handler"></div>
             </th>
           </tr>
         </thead>
-        <tbody>
-          <tr v-for="n in 4"
-            :key="n"
-            @mouseover="rowOver($event, n)">
-            <td @mousedown="startRowDrag($event, n)"
-              style=" font-weight: 600; font-size: small; user-select: none;">
-              <button class="p-0 me-1"
-                style="width: 10px;">
-                <CombinedShape :vw="10" />
-              </button>
-              {{ n }}
+        <TransitionGroup name="list"
+          tag="tbody">
+          <tr v-for="(row, i) in globalStore.rows"
+            :key="row.id"
+            @mouseenter="rowOver">
+            <td @mousedown="startRowDrag"
+              style=" font-weight: 600; font-size: small; user-select: none; width: 30px !important;">
+              <div>
+                <button class="p-0 me-3"
+                  style="width: 10px;">
+                  <CombinedShape :vw="10" />
+                  <b class="ms-2">{{ i + 1 }}</b>
+                </button>
+              </div>
             </td>
-            <td>
-              <button class=" m-0 p-0">
-                <DotsVertical />
-              </button>
+            <td class="user-select-none "
+              style="width: 20px !important;">
+              <action-button :rowId="row.id" />
             </td>
             <td>
               <MyDropDown class="w-100 " />
             </td>
             <td>
               <div>
-                <input type="text"
+                <input type="number"
                   class="w-100 py-1 px-2">
               </div>
             </td>
             <td>
               <div>
-                <input type="text"
+                <input type="number"
                   class="w-100 py-1 px-2">
               </div>
             </td>
@@ -374,10 +398,10 @@ function rowDragEnd() {
               </div>
             </td>
           </tr>
-
-        </tbody>
+        </TransitionGroup>
       </table>
     </div>
+    <my-results class="align-self-end me-2" />
   </div>
 </template>
 
@@ -390,6 +414,22 @@ th {
   font-size: small;
   background-color: white;
 }
+
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.5s ease;
+}
+
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
+}
+
+td {
+  text-align: center;
+}
+
 
 thead > tr > th:first-child {
   border-left: none;
@@ -407,7 +447,6 @@ th > span {
   overflow: hidden;
   white-space: nowrap;
   width: inherit;
-  min-width: 60px;
   max-width: 100%;
   background-color: transparent;
 }

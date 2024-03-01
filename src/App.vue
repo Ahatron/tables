@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import ProductCard from './components/ProductCard.vue'
+import ProductCards from './components/ProductCards.vue'
 import MyHeader from './components/MyHeader.vue'
 import AddRow from './components/AddRow.vue'
 import MyResults from './components/MyResults.vue'
 import ProductsTable from './components/ProductsTable.vue'
+
+
+
 </script>
 
 <template>
@@ -11,9 +14,7 @@ import ProductsTable from './components/ProductsTable.vue'
     <MyHeader class="mb-4" />
     <AddRow class="mb-4" />
     <ProductsTable class="d-none d-sm-flex " />
-    <ProductCard v-for="n in 3"
-      :key="n"
-      class="mb-4 d-sm-none" />
+    <ProductCards class=" d-sm-none" />
     <MyResults class="w-100 mb-3 d-sm-none" />
   </div>
 </template>
@@ -24,6 +25,11 @@ body {
   padding: 0;
 
   box-sizing: border-box;
+}
+
+img,
+svg {
+  vertical-align: baseline !important;
 }
 
 .card {
