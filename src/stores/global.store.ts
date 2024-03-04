@@ -5,8 +5,6 @@ interface Product {
   id: number
 }
 
-// fsfsdfs
-
 const useGlobalStore = defineStore('global', () => {
   const theadCells = ref([
       { name: '', visible: true },
