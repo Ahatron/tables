@@ -41,12 +41,12 @@
         class="table position-relative  table-bordered border-start-0 mb-0">
         <thead>
           <tr>
-            <th v-for="({ name }, i) in globalStore.theadCells"
+            <th v-for="{ name } of globalStore.theadCells"
               :key="name"
               @mousedown="columnReplace.startDrag"
               @mouseenter="columnReplace.handleMouseOver"
               @mouseleave="columnReplace.mouseLeave">
-              <span :style="{ 'min-width': i > 1 ? '60px !important' : '' }"> {{ name }}</span>
+              <span :style="{ 'min-width': name === '' ? '60px !important' : '' }"> {{ name }}</span>
               <div class="replace-left"
                 @mouseenter="columnReplace.replace"></div>
               <div class="replace-right"
@@ -58,48 +58,38 @@
         </thead>
         <TransitionGroup name="list"
           tag="tbody">
-          <tr v-for="(row, i) in globalStore.rows"
-            :key="row.id"
+          <tr v-for="row, i in globalStore.rows"
+            :key="i"
             @mouseenter="rowReplace.rowOver">
-            <td @mousedown="rowReplace.startRowDrag"
-              style=" font-weight: 600; font-size: small; user-select: none; width: 30px !important;">
-              <div>
-                <button class="p-0 me-3"
-                  style="width: 10px;">
-                  <CombinedShape :vw="10" />
-                  <b class="ms-2">{{ i + 1 }}</b>
-                </button>
-              </div>
-            </td>
-            <td class="user-select-none "
-              style="width: 20px !important;">
-              <action-button :rowId="row.id" />
-            </td>
-            <td>
-              <MyDropDown class="w-100 " />
-            </td>
-            <td>
-              <div>
-                <input type="number"
-                  class="w-100 py-1 px-2">
-              </div>
-            </td>
-            <td>
-              <div>
-                <input type="number"
-                  class="w-100 py-1 px-2">
-              </div>
-            </td>
-            <td>
-              <MyDropDown class="w-100 " />
-
-            </td>
-            <td>
-              <div>
-                <input type="number"
-                  class="w-100 py-1 px-2">
-              </div>
-            </td>
+            <template v-for="cell, index of row"
+              :key="cell.header">
+              <td v-if="cell.header === ''"
+                @mousedown="rowReplace.startRowDrag"
+                style=" font-weight: 600; font-size: small; user-select: none; width: 30px !important;">
+                <div>
+                  <button class="p-0 me-3"
+                    style="width: 10px;">
+                    <CombinedShape :vw="10" />
+                    <b class="ms-2">{{ i + 1 }}</b>
+                  </button>
+                </div>
+              </td>
+              <td v-else-if="cell.header === ' '"
+                class="user-select-none "
+                style="width: 20px !important;">
+                <action-button :rowId="index" />
+              </td>
+              <td v-else-if="typeof cell.value === 'string'">
+                <MyDropDown class="w-100" />
+              </td>
+              <td v-else>
+                <div>
+                  <input v-model="cell.value"
+                    type="number"
+                    class="w-100 py-1 px-2">
+                </div>
+              </td>
+            </template>
           </tr>
         </TransitionGroup>
       </table>

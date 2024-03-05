@@ -1,25 +1,39 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
-
-interface Product {
-  id: number
-}
+import { reactive, ref } from 'vue'
 
 const useGlobalStore = defineStore('global', () => {
   const theadCells = ref([
-      { name: '', visible: true },
-      { name: '', visible: true },
-      { name: 'Наименование еденицы', visible: true },
-      { name: 'Цена', visible: true },
-      { name: 'Кол-во', visible: true },
-      { name: 'Наименование товара', visible: true },
-      { name: 'Итого', visible: true }
+      { name: '', visible: true, index: 0 },
+      { name: ' ', visible: true, index: 1 },
+      { name: 'Наименование еденицы', visible: true, index: 2 },
+      { name: 'Цена', visible: true, index: 3 },
+      { name: 'Кол-во', visible: true, index: 4 },
+      { name: 'Наименование товара', visible: true, index: 5 },
+      { name: 'Итого', visible: true, index: 6 }
     ]),
-    rows = ref<Product[]>([{ id: 1 }, { id: 2 }, { id: 3 }])
+    rows = reactive([
+      [
+        { value: '', header: theadCells.value[0].name },
+        { value: '', header: theadCells.value[1].name },
+        { value: '', header: theadCells.value[2].name },
+        { value: 0, header: theadCells.value[3].name },
+        { value: 0, header: theadCells.value[4].name },
+        { value: '', header: theadCells.value[5].name },
+        { value: 0, header: theadCells.value[6].name }
+      ]
+    ])
   const table = ref<HTMLTableElement>()
 
   function addRow() {
-    rows.value.push({ id: Date.now() })
+    rows.push([
+      { value: '', header: theadCells.value[0].name },
+      { value: '', header: theadCells.value[1].name },
+      { value: '', header: theadCells.value[2].name },
+      { value: 0, header: theadCells.value[3].name },
+      { value: 0, header: theadCells.value[4].name },
+      { value: '', header: theadCells.value[5].name },
+      { value: 0, header: theadCells.value[6].name }
+    ])
   }
 
   function columnShowToggle(colIndex: number, show: boolean) {
@@ -33,8 +47,8 @@ const useGlobalStore = defineStore('global', () => {
     }
   }
 
-  function removeRow(removeId: number) {
-    rows.value = rows.value.filter(({ id }) => id !== removeId)
+  function removeRow(removeIndex: number) {
+    rows.splice(removeIndex, 1)
   }
 
   return { theadCells, rows, table, addRow, columnShowToggle, removeRow }
