@@ -19,9 +19,9 @@
       <form v-if="showOptions"
         id="checkboxForm"
         class="d-flex flex-column p-1">
-        <template v-for="(col, index) in globalStore.theadCells"
+        <template v-for="(col, index) in globalStore.headerRow"
           :key="col.name">
-          <label v-if="col.name.length"
+          <label v-if="col.name.length > 1"
             class="p-2"
             @click="col.visible = !col.visible; globalStore.columnShowToggle(index, col.visible)">
             <input type="checkbox"
@@ -38,21 +38,24 @@
     </div>
   </div>
 </template>
-<script setup lang="ts">
-import MetalGear from '@/assets/metal-gear.vue'
-import PathSvg from '@/assets/path-svg.vue'
-import useGlobalStore from '@/stores/global.store';
-import { ref } from 'vue'
 
-const menu = ref(false),
-  showOptions = ref(false),
-  globalStore = useGlobalStore()
+<script setup
+  lang="ts">
+  import MetalGear from '@/assets/metal-gear.vue'
+  import PathSvg from '@/assets/path-svg.vue'
+  import useGlobalStore from '@/stores/global.store';
+  import { ref } from 'vue'
 
-document.addEventListener('click', () => {
-  menu.value = false
-  showOptions.value = false
-})
+  const menu = ref(false),
+    showOptions = ref(false),
+    globalStore = useGlobalStore()
+
+  document.addEventListener('click', () => {
+    menu.value = false
+    showOptions.value = false
+  })
 </script>
+
 <style scoped>
 .options {
   z-index: 6;

@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { reactive, ref } from 'vue'
 
 const useGlobalStore = defineStore('global', () => {
-  const theadCells = ref([
+  const headerRow = ref([
       { name: '', visible: true, index: 0 },
       { name: ' ', visible: true, index: 1 },
       { name: 'Наименование еденицы', visible: true, index: 2 },
@@ -11,47 +11,55 @@ const useGlobalStore = defineStore('global', () => {
       { name: 'Наименование товара', visible: true, index: 5 },
       { name: 'Итого', visible: true, index: 6 }
     ]),
-    rows = reactive([
+    bodyRows = reactive([
       [
-        { value: '', header: theadCells.value[0].name },
-        { value: '', header: theadCells.value[1].name },
-        { value: '', header: theadCells.value[2].name },
-        { value: 0, header: theadCells.value[3].name },
-        { value: 0, header: theadCells.value[4].name },
-        { value: '', header: theadCells.value[5].name },
-        { value: 0, header: theadCells.value[6].name }
+        { value: '', header: headerRow.value[0].name, rowIndex: 0 },
+        { value: '', header: headerRow.value[1].name, rowIndex: 1 },
+        { value: '', header: headerRow.value[2].name, rowIndex: 2 },
+        { value: 0, header: headerRow.value[3].name, rowIndex: 3 },
+        { value: 0, header: headerRow.value[4].name, rowIndex: 4 },
+        { value: '', header: headerRow.value[5].name, rowIndex: 5 },
+        { value: 0, header: headerRow.value[6].name, rowIndex: 6 }
       ]
     ])
   const table = ref<HTMLTableElement>()
 
   function addRow() {
-    rows.push([
-      { value: '', header: theadCells.value[0].name },
-      { value: '', header: theadCells.value[1].name },
-      { value: '', header: theadCells.value[2].name },
-      { value: 0, header: theadCells.value[3].name },
-      { value: 0, header: theadCells.value[4].name },
-      { value: '', header: theadCells.value[5].name },
-      { value: 0, header: theadCells.value[6].name }
+    bodyRows.push([
+      { value: '', header: headerRow.value[0].name, rowIndex: 0 },
+      { value: '', header: headerRow.value[1].name, rowIndex: 1 },
+      { value: '', header: headerRow.value[2].name, rowIndex: 2 },
+      { value: 0, header: headerRow.value[3].name, rowIndex: 3 },
+      { value: 0, header: headerRow.value[4].name, rowIndex: 4 },
+      { value: '', header: headerRow.value[5].name, rowIndex: 5 },
+      { value: 0, header: headerRow.value[6].name, rowIndex: 6 }
     ])
+  }
+
+  function replaceIdx(initialIndex: number, repIndex: number) {
+    headerRow.value[initialIndex].index = repIndex
+    headerRow.value[repIndex].index = initialIndex
+    headerRow.value.sort((a, b) => a.index - b.index)
   }
 
   function columnShowToggle(colIndex: number, show: boolean) {
     if (!table.value) return
 
-    const rows = table.value.rows
-    for (let i = 0; i < rows.length; i++) {
-      const cell = rows[i].cells[colIndex]
+    const bodyRows = table.value.rows
+
+    for (let i = 0; i < bodyRows.length; i++) {
+      const cell = bodyRows[i].cells[colIndex]
 
       cell.style.display = show ? '' : 'none'
     }
   }
 
   function removeRow(removeIndex: number) {
-    rows.splice(removeIndex, 1)
+    console.log(removeIndex)
+    bodyRows.splice(removeIndex, 1)
   }
 
-  return { theadCells, rows, table, addRow, columnShowToggle, removeRow }
+  return { headerRow, bodyRows, table, addRow, columnShowToggle, removeRow, replaceIdx }
 })
 
 export default useGlobalStore

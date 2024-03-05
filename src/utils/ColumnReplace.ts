@@ -111,13 +111,7 @@ class ColumnReplace {
 
   replace() {
     if (this.table && this.initialIndex !== null && this.repIndex !== null) {
-      ;[
-        this.globalStore.theadCells[this.initialIndex],
-        this.globalStore.theadCells[this.repIndex]
-      ] = [
-        this.globalStore.theadCells[this.repIndex],
-        this.globalStore.theadCells[this.initialIndex]
-      ]
+      this.globalStore.replaceIdx(this.initialIndex, this.repIndex)
 
       for (let i = 0; i < this.table.rows.length; i++) {
         const row = this.table.rows[i],

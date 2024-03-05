@@ -41,7 +41,7 @@
         class="table position-relative  table-bordered border-start-0 mb-0">
         <thead>
           <tr>
-            <th v-for="{ name } of globalStore.theadCells"
+            <th v-for="{ name } of globalStore.headerRow"
               :key="name"
               @mousedown="columnReplace.startDrag"
               @mouseenter="columnReplace.handleMouseOver"
@@ -58,10 +58,10 @@
         </thead>
         <TransitionGroup name="list"
           tag="tbody">
-          <tr v-for="row, i in globalStore.rows"
-            :key="i"
+          <tr v-for="row, i of globalStore.bodyRows"
+            :key="row[i].rowIndex"
             @mouseenter="rowReplace.rowOver">
-            <template v-for="cell, index of row"
+            <template v-for="cell of row"
               :key="cell.header">
               <td v-if="cell.header === ''"
                 @mousedown="rowReplace.startRowDrag"
@@ -77,7 +77,7 @@
               <td v-else-if="cell.header === ' '"
                 class="user-select-none "
                 style="width: 20px !important;">
-                <action-button :rowId="index" />
+                <action-button :rowId="i" />
               </td>
               <td v-else-if="typeof cell.value === 'string'">
                 <MyDropDown class="w-100" />
