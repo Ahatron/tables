@@ -111,19 +111,8 @@ class ColumnReplace {
 
   replace() {
     if (this.table && this.initialIndex !== null && this.repIndex !== null) {
-      this.globalStore.replaceIdx(this.initialIndex, this.repIndex)
+      this.globalStore.colReplace(this.initialIndex, this.repIndex)
 
-      for (let i = 0; i < this.table.rows.length; i++) {
-        const row = this.table.rows[i],
-          selectedCell = row.cells[this.initialIndex],
-          replacementCell = row.cells[this.repIndex]
-
-        if (this.toLeft) {
-          selectedCell.after(replacementCell)
-        } else {
-          selectedCell.before(replacementCell)
-        }
-      }
       this.initialIndex = this.repIndex
     }
   }

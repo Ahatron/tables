@@ -1,6 +1,17 @@
 import { defineStore } from 'pinia'
 import { reactive, ref } from 'vue'
 
+interface Cell {
+  value: { name: string; weight: number } | number | ''
+  header: 'row number' | 'action' | 'price' | 'count' | 'total' | 'unit name' | 'product name'
+  visible: boolean
+}
+
+interface BodyRow {
+  rowIdx: number
+  cells: Cell[]
+}
+
 const useGlobalStore = defineStore('global', () => {
   const headerRow = ref([
       { name: '', visible: true, index: 0 },
@@ -11,46 +22,64 @@ const useGlobalStore = defineStore('global', () => {
       { name: 'Наименование товара', visible: true, index: 5 },
       { name: 'Итого', visible: true, index: 6 }
     ]),
-    bodyRows = reactive([
-      [
-        { value: '', header: headerRow.value[0].name, rowIndex: 0 },
-        { value: '', header: headerRow.value[1].name, rowIndex: 1 },
-        { value: '', header: headerRow.value[2].name, rowIndex: 2 },
-        { value: 0, header: headerRow.value[3].name, rowIndex: 3 },
-        { value: 0, header: headerRow.value[4].name, rowIndex: 4 },
-        { value: '', header: headerRow.value[5].name, rowIndex: 5 },
-        { value: 0, header: headerRow.value[6].name, rowIndex: 6 }
-      ]
+    bodyRows = reactive<BodyRow[]>([
+      {
+        rowIdx: 0,
+        cells: [
+          { value: '', header: 'row number', visible: true },
+          { value: '', header: 'action', visible: true },
+          { value: { name: '', weight: 0 }, header: 'unit name', visible: true },
+          { value: 0, header: 'price', visible: true },
+          { value: 0, header: 'count', visible: true },
+          { value: { name: '', weight: 0 }, header: 'product name', visible: true },
+          { value: 0, header: 'total', visible: true }
+        ]
+      }
     ])
   const table = ref<HTMLTableElement>()
+  const newRowCells: Cell[] = [
+    { value: '', header: 'row number', visible: true },
+    { value: '', header: 'action', visible: true },
+    { value: { name: '', weight: 0 }, header: 'unit name', visible: true },
+    { value: 0, header: 'price', visible: true },
+    { value: 0, header: 'count', visible: true },
+    { value: { name: '', weight: 0 }, header: 'product name', visible: true },
+    { value: 0, header: 'total', visible: true }
+  ]
 
   function addRow() {
-    bodyRows.push([
-      { value: '', header: headerRow.value[0].name, rowIndex: 0 },
-      { value: '', header: headerRow.value[1].name, rowIndex: 1 },
-      { value: '', header: headerRow.value[2].name, rowIndex: 2 },
-      { value: 0, header: headerRow.value[3].name, rowIndex: 3 },
-      { value: 0, header: headerRow.value[4].name, rowIndex: 4 },
-      { value: '', header: headerRow.value[5].name, rowIndex: 5 },
-      { value: 0, header: headerRow.value[6].name, rowIndex: 6 }
-    ])
+    bodyRows.push({
+      rowIdx: bodyRows.length,
+      cells: JSON.parse(JSON.stringify(newRowCells))
+    })
   }
 
-  function replaceIdx(initialIndex: number, repIndex: number) {
+  function colReplace(initialIndex: number, repIndex: number) {
     headerRow.value[initialIndex].index = repIndex
     headerRow.value[repIndex].index = initialIndex
     headerRow.value.sort((a, b) => a.index - b.index)
+
+    for (const row of bodyRows) {
+      ;[row.cells[initialIndex], row.cells[repIndex]] = [
+        row.cells[repIndex],
+        row.cells[initialIndex]
+      ]
+    }
+
+    ;[newRowCells[initialIndex], newRowCells[repIndex]] = [
+      newRowCells[repIndex],
+      newRowCells[initialIndex]
+    ]
   }
 
-  function columnShowToggle(colIndex: number, show: boolean) {
+  function columnShowToggle(colIndex: number, isVisible: boolean) {
     if (!table.value) return
 
-    const bodyRows = table.value.rows
+    headerRow.value[colIndex].visible = isVisible
+    newRowCells[colIndex].visible = isVisible
 
     for (let i = 0; i < bodyRows.length; i++) {
-      const cell = bodyRows[i].cells[colIndex]
-
-      cell.style.display = show ? '' : 'none'
+      bodyRows[i].cells[colIndex].visible = isVisible
     }
   }
 
@@ -59,7 +88,9 @@ const useGlobalStore = defineStore('global', () => {
     bodyRows.splice(removeIndex, 1)
   }
 
-  return { headerRow, bodyRows, table, addRow, columnShowToggle, removeRow, replaceIdx }
+  return { headerRow, bodyRows, table, addRow, columnShowToggle, removeRow, colReplace }
 })
 
 export default useGlobalStore
+
+export type { BodyRow }

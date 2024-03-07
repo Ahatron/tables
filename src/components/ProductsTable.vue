@@ -41,29 +41,32 @@
         class="table position-relative  table-bordered border-start-0 mb-0">
         <thead>
           <tr>
-            <th v-for="{ name } of globalStore.headerRow"
-              :key="name"
-              @mousedown="columnReplace.startDrag"
-              @mouseenter="columnReplace.handleMouseOver"
-              @mouseleave="columnReplace.mouseLeave">
-              <span :style="{ 'min-width': name === '' ? '60px !important' : '' }"> {{ name }}</span>
-              <div class="replace-left"
-                @mouseenter="columnReplace.replace"></div>
-              <div class="replace-right"
-                @mouseenter="columnReplace.replace"></div>
-              <div @mousedown.stop="columnResize.resizeStart"
-                class="resize-handler"></div>
-            </th>
+            <template v-for="{ name, visible } of globalStore.headerRow"
+              :key="name">
+              <th v-if="visible"
+                @mousedown="columnReplace.startDrag"
+                @mouseenter="columnReplace.handleMouseOver"
+                @mouseleave="columnReplace.mouseLeave">
+                <span :style="{ 'min-width': name === '' ? '60px !important' : '' }"> {{ name }}</span>
+                <div class="replace-left"
+                  @mouseenter="columnReplace.replace"></div>
+                <div class="replace-right"
+                  @mouseenter="columnReplace.replace"></div>
+                <div @mousedown.stop="columnResize.resizeStart"
+                  class="resize-handler"></div>
+              </th>
+            </template>
+
           </tr>
         </thead>
         <TransitionGroup name="list"
           tag="tbody">
           <tr v-for="row, i of globalStore.bodyRows"
-            :key="row[i].rowIndex"
+            :key="row.rowIdx"
             @mouseenter="rowReplace.rowOver">
-            <template v-for="cell of row"
+            <template v-for="cell of row.cells"
               :key="cell.header">
-              <td v-if="cell.header === ''"
+              <td v-if="cell.header === 'row number'"
                 @mousedown="rowReplace.startRowDrag"
                 style=" font-weight: 600; font-size: small; user-select: none; width: 30px !important;">
                 <div>
@@ -74,18 +77,24 @@
                   </button>
                 </div>
               </td>
-              <td v-else-if="cell.header === ' '"
+              <td v-else-if="cell.header === 'action'"
                 class="user-select-none "
                 style="width: 20px !important;">
                 <action-button :rowId="i" />
               </td>
-              <td v-else-if="typeof cell.value === 'string'">
-                <MyDropDown class="w-100" />
+              <td v-else-if="cell.header === 'product name' || cell.header === 'unit name'"
+                v-show="cell.visible">
+                <MyDropDown v-model="cell.value"
+                  :name="cell.header"
+                  class="w-100" />
               </td>
-              <td v-else>
+              <td v-else
+                v-show="cell.visible">
                 <div>
                   <input v-model="cell.value"
+                    @input="() => typeof cell.value == 'number' && cell.value < 0 ? cell.value = 0 : cell.value"
                     type="number"
+                    :name="cell.header"
                     class="w-100 py-1 px-2">
                 </div>
               </td>

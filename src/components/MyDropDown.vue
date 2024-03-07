@@ -2,8 +2,9 @@
   <div class="my-dropdown position-relative">
     <div class="d-inline-flex align-items-stretch w-100 my-dropdown__input"
       @click.stop="dropper = !dropper">
-      <input v-model="selectedValue"
+      <input v-model="selectedValue.name"
         type="text"
+        :name="name"
         class="rounded-end-0 py-sm-1  border-end-0 w-100" />
       <button class="rounded-end w-auto border-start-0 p-0"
         style="background-color: #f6f5f3">
@@ -21,41 +22,52 @@
     <li v-show="dropper"
       type="none"
       class="rounded shadow position-absolute my-dropdown__list">
-      <ul v-for="item in matchedValues"
-        :key="item"
-        @click="selectedValue = item"
+      <ul v-for="item of matchedValues"
+        :key="item.name"
+        @click="selectedValue = item; emit('update:modelValue', item)"
         class="my-dropdown__list-item"
         style="white-space: nowrap;text-overflow: ellipsis;overflow: hidden;">
         {{
-          item
-        }}
+        item.name
+      }}
       </ul>
     </li>
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref, computed } from 'vue'
+<script setup
+  lang="ts">
+  import { ref, computed, watch } from 'vue'
 
-const dropper = ref(false),
-  values = ref([
-    'Мраморный щебень фр. 2-5 мм, 25кг',
-    'Мраморный щебень фр. 2-5 мм, 25кг (белый)',
-    'Мраморный щебень фр. 2-5 мм, 25кг (вайт)',
-    'Мраморный щебень фр. 2-5 мм, 25кг, возврат',
-    'Мраморный щебень фр. 2-5 мм, 1т'
-  ]),
-  selectedValue = ref('')
+  interface Product { name: string, weight: number }
 
-const matchedValues = computed(() => {
-  return values.value
-    .filter((item: string) =>
-      item.toLocaleLowerCase().includes(selectedValue.value.toLocaleLowerCase())
-    )
-    .sort()
-})
+  const props = defineProps<{ modelValue: Product | any, name: string }>()
+  const emit = defineEmits(['update:modelValue'])
 
-document.addEventListener('click', () => (dropper.value = false))
+
+  const dropper = ref(false),
+    variants = ref<Product[]>([
+      { name: 'Мраморный щебень фр. 2-5 мм, 25кг', weight: 25 },
+      { name: 'Мраморный щебень фр. 2-5 мм, 25кг (белый)', weight: 25 },
+      { name: 'Мраморный щебень фр. 2-5 мм, 25кг (вайт)', weight: 25 },
+      { name: 'Мраморный щебень фр. 2-5 мм, 25кг, возврат', weight: 25 },
+      { name: 'Мраморный щебень фр. 2-5 мм, 1т', weight: 1000 },
+    ]),
+    selectedValue = ref(props.modelValue)
+
+  watch(() => props.modelValue, (newValue) => {
+    selectedValue.value = newValue;
+  });
+
+  const matchedValues = computed((): Product[] => {
+    return variants.value
+      .filter((item) =>
+        item.name.toLowerCase().includes(selectedValue.value.name.toLowerCase())
+      )
+      .sort()
+  })
+
+  document.addEventListener('click', () => (dropper.value = false))
 </script>
 
 <style scoped>
@@ -66,12 +78,12 @@ document.addEventListener('click', () => (dropper.value = false))
 .my-dropdown__list {
   background-color: white;
   width: inherit;
-  z-index: 9999;
+  z-index: 4;
 }
 
 .my-dropdown__list-item {
   margin: 0;
-  z-index: 9999;
+  z-index: 4;
   padding: 10px 10px;
 }
 

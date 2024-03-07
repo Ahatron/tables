@@ -23,7 +23,7 @@
           :key="col.name">
           <label v-if="col.name.length > 1"
             class="p-2"
-            @click="col.visible = !col.visible; globalStore.columnShowToggle(index, col.visible)">
+            @click="globalStore.columnShowToggle(index, !col.visible)">
             <input type="checkbox"
               :value="col.name"
               :checked="col.visible"
