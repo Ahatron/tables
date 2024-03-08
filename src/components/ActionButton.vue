@@ -1,9 +1,9 @@
 <template>
   <div>
     <button @click.stop="menu = !menu"
-      class="border-0 m-0 p-0 mb-2 align-items-center"
-      style="background-color: #fff; width: 10px; height: 20px">
-      <DotsVertical />
+      class="border-0 m-0 p-0  align-items-center"
+      style=" width: 10px; height: 20px">
+      <img src="../assets/dots-vertical.png">
     </button>
     <button @click="globalStore.removeRow(rowId)"
       v-if="menu"
@@ -12,20 +12,20 @@
     </button>
   </div>
 </template>
-<script setup lang="ts">
-import useGlobalStore from '@/stores/global.store'
-import DotsVertical from '@/assets/DotsVertical.vue'
-import { ref, defineProps } from 'vue';
+<script setup
+  lang="ts">
+  import useGlobalStore from '@/stores/global.store'
+  import { ref, defineProps } from 'vue';
 
-const globalStore = useGlobalStore()
+  const globalStore = useGlobalStore()
 
-defineProps(['rowId'])
+  defineProps(['rowId'])
 
-const menu = ref(false)
+  const menu = ref(false)
 
-document.addEventListener('click', () => {
-  menu.value = false
-})
+  document.addEventListener('click', () => {
+    menu.value = false
+  })
 </script>
 <style scoped>
 .product__btn {

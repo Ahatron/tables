@@ -29,6 +29,8 @@
               <input type="number"
                 v-model="cell.value"
                 :name="cell.header"
+                :readonly="cell.header == 'total'"
+                @input="() => typeof cell.value == 'number' && cell.value < 0 ? cell.value = 0 : cell.value"
                 class="w-100 mt-1 mb-2" />
             </label>
           </template>

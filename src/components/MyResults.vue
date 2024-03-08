@@ -1,17 +1,23 @@
+<script setup
+  lang="ts">
+  import useGlobalStore from '@/stores/global.store';
+
+  const globalStore = useGlobalStore()
+</script>
 <template>
   <div>
     <div class="my-container mb-1">
       <div class="my-row p-2">
         <div class="my-row__data me-5">Сумма:</div>
-        <div class="my-row__value">152 212 руб</div>
+        <div class="my-row__value">{{ globalStore.priceSum }} руб</div>
       </div>
       <div class="my-row p-2">
         <div class="my-row__data me-5">Кол-во:</div>
-        <div class="my-row__value">24 шт</div>
+        <div class="my-row__value">{{ globalStore.totalCount }} шт</div>
       </div>
       <div class="my-row p-2">
         <div class="my-row__data me-5">Общий вес:</div>
-        <div class="my-row__value">2 322 кг</div>
+        <div class="my-row__value">{{ globalStore.totalWeight }} кг</div>
       </div>
     </div>
 
@@ -19,7 +25,7 @@
       <div class="my-row p-2">
         <div class="my-row__data me-5"
           style="color: black; font-weight: 600">Общая сумма:</div>
-        <div class="my-row__value">152 212 руб</div>
+        <div class="my-row__value">{{ globalStore.totalSum }} руб</div>
       </div>
     </div>
   </div>

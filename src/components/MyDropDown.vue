@@ -37,9 +37,10 @@
 
 <script setup
   lang="ts">
+  import type { Product } from '@/stores/global.store';
   import { ref, computed, watch } from 'vue'
 
-  interface Product { name: string, weight: number }
+
 
   const props = defineProps<{ modelValue: Product | any, name: string }>()
   const emit = defineEmits(['update:modelValue'])
@@ -53,7 +54,7 @@
       { name: 'Мраморный щебень фр. 2-5 мм, 25кг, возврат', weight: 25 },
       { name: 'Мраморный щебень фр. 2-5 мм, 1т', weight: 1000 },
     ]),
-    selectedValue = ref(props.modelValue)
+    selectedValue = ref<Product>({ name: '', weight: 0 })
 
   watch(() => props.modelValue, (newValue) => {
     selectedValue.value = newValue;

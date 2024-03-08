@@ -1,8 +1,7 @@
 <script setup
   lang="ts">
   import MyResults from '@/components/MyResults.vue';
-  import CombinedShape from '@/assets/combined-shape.vue'
-  import ActionButton from './ActionButton.vue';
+  import ActionButton from '@/components/ActionButton.vue';
   import MyDropDown from '@/components/MyDropDown.vue';
   import ColumnOptions from '@/components/ColumnOptions.vue'
   import useGlobalStore from '@/stores/global.store'
@@ -33,7 +32,7 @@
   <div ref="card"
     class="card shadow rounded pt-1 pb-3 d-flex flex-column"
     style="background-color: #fff">
-    <column-options />
+    <column-options class="me-2" />
 
     <div ref="tableContainer"
       class="overflow-auto mt-2 mb-1 pb-3  w-100">
@@ -43,7 +42,7 @@
           <tr>
             <template v-for="{ name, visible } of globalStore.headerRow"
               :key="name">
-              <th v-if="visible"
+              <th v-show="visible"
                 @mousedown="columnReplace.startDrag"
                 @mouseenter="columnReplace.handleMouseOver"
                 @mouseleave="columnReplace.mouseLeave">
@@ -59,7 +58,7 @@
 
           </tr>
         </thead>
-        <TransitionGroup name="list"
+        <TransitionGroup name="rows"
           tag="tbody">
           <tr v-for="row, i of globalStore.bodyRows"
             :key="row.rowIdx"
@@ -68,17 +67,18 @@
               :key="cell.header">
               <td v-if="cell.header === 'row number'"
                 @mousedown="rowReplace.startRowDrag"
+                class="action"
                 style=" font-weight: 600; font-size: small; user-select: none; width: 30px !important;">
                 <div>
                   <button class="p-0 me-3"
                     style="width: 10px;">
-                    <CombinedShape :vw="10" />
+                    <img src="../assets/combined-shape.png">
                     <b class="ms-2">{{ i + 1 }}</b>
                   </button>
                 </div>
               </td>
               <td v-else-if="cell.header === 'action'"
-                class="user-select-none "
+                class="user-select-none action"
                 style="width: 20px !important;">
                 <action-button :rowId="i" />
               </td>
@@ -95,6 +95,7 @@
                     @input="() => typeof cell.value == 'number' && cell.value < 0 ? cell.value = 0 : cell.value"
                     type="number"
                     :name="cell.header"
+                    :readonly="cell.header == 'total'"
                     class="w-100 py-1 px-2">
                 </div>
               </td>
@@ -108,6 +109,15 @@
 </template>
 
 <style scoped>
+.action {
+  cursor: pointer;
+}
+
+.action:hover {
+  background-color: #dee2e6;
+}
+
+
 td,
 th {
   padding: .8rem;
@@ -117,13 +127,13 @@ th {
   background-color: white;
 }
 
-.list-enter-active,
-.list-leave-active {
+.rows-enter-active,
+.rows-leave-active {
   transition: all 0.5s ease;
 }
 
-.list-enter-from,
-.list-leave-to {
+.rows-enter-from,
+.rows-leave-to {
   opacity: 0;
   transform: translateX(30px);
 }
