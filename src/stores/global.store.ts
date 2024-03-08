@@ -154,6 +154,14 @@ const useGlobalStore = defineStore('global', () => {
     }, 0)
   )
 
+  function saveChanges() {
+    const confirm = window.confirm('Сохранить изменения?')
+
+    if (!confirm) return
+
+    // Your AJAX
+  }
+
   return {
     headerRow,
     bodyRows,
@@ -165,7 +173,8 @@ const useGlobalStore = defineStore('global', () => {
     addRow,
     columnShowToggle,
     removeRow,
-    colReplace
+    colReplace,
+    saveChanges
   }
 })
 

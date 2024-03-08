@@ -1,6 +1,5 @@
 <template>
-  <TransitionGroup name="list"
-    tag="div">
+  <div>
     <div v-for="(row, index) in globalStore.bodyRows"
       :key="row.rowIdx"
       class="card p-3 shadow mb-4">
@@ -14,7 +13,8 @@
 
       <p class="description mb-0">Действие</p>
       <div class="position-relative">
-        <action-button :rowId="row.rowIdx" />
+        <action-button :rowId="row.rowIdx"
+           />
         <div>
           <template v-for="(cell, index) of row.cells"
             :key="cell.header">
@@ -30,6 +30,7 @@
                 v-model="cell.value"
                 :name="cell.header"
                 :readonly="cell.header == 'total'"
+                @change="globalStore.saveChanges"
                 @input="() => typeof cell.value == 'number' && cell.value < 0 ? cell.value = 0 : cell.value"
                 class="w-100 mt-1 mb-2" />
             </label>
@@ -37,7 +38,7 @@
         </div>
       </div>
     </div>
-  </TransitionGroup>
+  </div>
 </template>
 
 <script setup

@@ -5,7 +5,7 @@
       style=" width: 10px; height: 20px">
       <img src="../assets/dots-vertical.png">
     </button>
-    <button @click="globalStore.removeRow(rowId)"
+    <button @click="globalStore.removeRow(rowId); globalStore.saveChanges()"
       v-if="menu"
       class="d-flex shadow position-absolute justify-content-start py-1 px-2 border-0 rounded product__btn">
       удалить

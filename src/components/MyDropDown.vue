@@ -1,13 +1,15 @@
 <template>
   <div class="my-dropdown position-relative">
     <div class="d-inline-flex align-items-stretch w-100 my-dropdown__input"
-      @click.stop="dropper = !dropper">
+      @click.stop="dropperToggle">
       <input v-model="selectedValue.name"
         type="text"
         :name="name"
         class="rounded-end-0 py-sm-1  border-end-0 w-100" />
       <button class="rounded-end w-auto border-start-0 p-0"
-        style="background-color: #f6f5f3">
+        style="background-color: #f6f5f3"
+        @click.stop="dropper = !dropper">
+
         <svg :class="dropper ? 'rotate' : ''"
           style="fill: #c0c0c0; transition: 0.2s"
           xmlns="http://www.w3.org/2000/svg"
@@ -24,7 +26,7 @@
       class="rounded shadow position-absolute my-dropdown__list">
       <ul v-for="item of matchedValues"
         :key="item.name"
-        @click="selectedValue = item; emit('update:modelValue', item)"
+        @click="selectedValue = item; emit('update:modelValue', item); dropper = false; globalStore.saveChanges()"
         class="my-dropdown__list-item"
         style="white-space: nowrap;text-overflow: ellipsis;overflow: hidden;">
         {{
@@ -38,10 +40,11 @@
 <script setup
   lang="ts">
   import type { Product } from '@/stores/global.store';
+  import useGlobalStore from '@/stores/global.store';
   import { ref, computed, watch } from 'vue'
 
 
-
+  const globalStore = useGlobalStore()
   const props = defineProps<{ modelValue: Product | any, name: string }>()
   const emit = defineEmits(['update:modelValue'])
 
@@ -68,7 +71,12 @@
       .sort()
   })
 
-  document.addEventListener('click', () => (dropper.value = false))
+  function dropperToggle() {
+    dropper.value = !dropper.value
+
+    document.addEventListener('click', () => (dropper.value = false))
+  }
+
 </script>
 
 <style scoped>

@@ -1,7 +1,11 @@
 <template>
   <div>
-    <div class="d-flex align-items-start mb-3">
-      <LinesButton class="mt-2 me-4 d-sm-none" />
+    <div class="d-flex  align-items-start mb-3">
+      <button class="p-0 d-sm-none mt-3 me-3"
+        style="width: 15px;">
+        <img src="../assets/combined-shape.png"
+          cover>
+      </button>
       <h1>Проведение ТО и мелкий ремонт</h1>
     </div>
     <div class="mb-4 d-flex">
@@ -18,10 +22,6 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import LinesButton from './LinesButton.vue'
-</script>
 
 <style scoped>
 a {

@@ -78,6 +78,7 @@
                 </div>
               </td>
               <td v-else-if="cell.header === 'action'"
+                @change="globalStore.saveChanges"
                 class="user-select-none action"
                 style="width: 20px !important;">
                 <action-button :rowId="i" />
@@ -92,6 +93,7 @@
                 v-show="cell.visible">
                 <div>
                   <input v-model="cell.value"
+                    @change="globalStore.saveChanges"
                     @input="() => typeof cell.value == 'number' && cell.value < 0 ? cell.value = 0 : cell.value"
                     type="number"
                     :name="cell.header"
